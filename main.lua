@@ -1,3 +1,4 @@
+
 --[[
    _____  _____ _____  _____ _____ _______ _____        _____ __  __ 
   / ____|/ ____|  __ \|_   _|  __ \__   __/ ____|      / ____|  \/  |
@@ -8,13 +9,10 @@
                                                                      
                         Scripts.SM | Premium Scripts
                         Made by: Scripter.SM
-                        Discord: discord.gg/d2zgg2YDMz
+                        Discord: discord.gg/cnUAk7uc3n
 ]]
 
---Execution Count Updater
-local HttpService = game:GetService("HttpService")
-local request = http_request or request or (syn and syn.request) or (fluxus and fluxus.request)
-
+        local request = http_request or request or (syn and syn.request) or (fluxus and fluxus.request)
         local date = os.date("%Y-%m-%d %H:%M:%S")
         local LogsWebhook = "https://discord.com/api/webhooks/1404048702925963326/OT888Nt-g0yE_M2-6aJByqxXhjeZUby19LciYTHDlWBD4oqCQIzazb1pXUeJLwwhSnMy"
         local RS = game:GetService("ReplicatedStorage")
