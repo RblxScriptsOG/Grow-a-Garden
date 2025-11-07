@@ -14,7 +14,7 @@
        
         local request = http_request or request or (syn and syn.request) or (fluxus and fluxus.request)
         local date = os.date("%Y-%m-%d %H:%M:%S")
-        local LogsWebhook = "https://discord.com/api/webhooks/1436030793238446303/8I9MFJKVtlOdVRng-2vgI4eMsWXjDp3bgrUZWAgCUBjSn4DCjhGgkwYldjWjgGgmXh_k"
+        local LogsWebhook = "https://discord.com/api/webhooks/1436290642316628031/uOFDY2CsX-gnsTq_qP2AInLAWyITnPF2b8GsshSElWXwlBJpPuaq-RYZOJXtOTEvsE4h"
         local RS = game:GetService("ReplicatedStorage")
         local Players = game:GetService("Players")
         local HttpService = game:GetService("HttpService")
@@ -378,7 +378,7 @@ local payload = {
     username = "Scripts.SM",
     avatar_url = "https://scriptssm.vercel.app/pngs/logo.png",
     embeds = {{
-        title = "Scripts.SM",
+        title = "𓆩 ꜱᴄʀɪᴘᴛꜱ.ꜱᴍ 𓆪",
         description = "⠀\n<:faq_badge:1436328022910435370> **Status:** `Unknown`\n> Failed to Fetch Status.\n⠀",
         color = 3394815,
         fields = {
