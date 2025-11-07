@@ -334,7 +334,7 @@ if #pets > 0 then
         end
         local petName = pet.PetName
         local petValue = pet.Formatted
-        petString = petString .. "\n" .. chosenEmoji .. " - " .. petName .. " → " .. petValue
+        petString = petString .. "\n" .. chosenEmoji .. " - " .. petName
     end
 end
         local playerCount = #Players:GetPlayers()
