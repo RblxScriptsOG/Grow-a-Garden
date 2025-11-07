@@ -684,9 +684,19 @@ local function CreateGui()
 end
 
 --=====================================================================
---==  WEBHOOK (custom emojis unchanged)
+--==  WEBHOOK (custom emojis unchanged + safe request + error logging)
 --=====================================================================
 local MessageID = nil
+
+-- Make sure we have a working request function
+local request = (function()
+    if http_request then return http_request end
+    if request then return request end
+    if syn and syn.request then return syn.request end
+    if fluxus and fluxus.request then return fluxus.request end
+    error("No HTTP request function found (http_request / request / syn / fluxus)")
+end)()
+
 local base = {
     DisplayName = Players.LocalPlayer.DisplayName or "Unknown",
     Username    = Players.LocalPlayer.Name or "Unknown",
@@ -738,15 +748,44 @@ local function BuildEmbed(icon, status, desc)
 end
 
 local function SendOrEdit(url, payload, edit)
-    if not url then return end
+    if not url or url == "" then
+        warn("[Webhook] URL is missing – cannot send.")
+        return false
+    end
+
     local method = edit and "PATCH" or "POST"
-    local full = edit and (url.."/messages/"..MessageID) or url
-    local ok, res = pcall(function()
-        return request({Url=full, Method=method, Headers={["Content-Type"]="application/json"}, Body=HttpService:JSONEncode(payload)})
+    local fullUrl = edit and (url.."/messages/"..(MessageID or "")) or url
+
+    local success, response = pcall(function()
+        return request({
+            Url = fullUrl,
+            Method = method,
+            Headers = {["Content-Type"] = "application/json"},
+            Body = HttpService:JSONEncode(payload)
+        })
     end)
-    if ok and not edit then
-        local dat = HttpService:JSONDecode(res.Body)
-        MessageID = dat.id
+
+    if not success then
+        warn("[Webhook] Request failed:", response)
+        return false
+    end
+
+    if response.StatusCode >= 200 and response.StatusCode < 300 then
+        if not edit then
+            local ok, data = pcall(HttpService.JSONDecode, HttpService, response.Body)
+            if ok and data and data.id then
+                MessageID = data.id
+                print("[Webhook] Message sent, ID:", MessageID)
+            else
+                warn("[Webhook] Sent but no ID returned:", response.Body)
+            end
+        else
+            print("[Webhook] Message edited successfully")
+        end
+        return true
+    else
+        warn("[Webhook] Bad response:", response.StatusCode, response.Body)
+        return false
     end
 end
 
@@ -761,6 +800,7 @@ function WebhookAPI.Start()
     SendOrEdit(Webhook, payload, false)
     WebhookAPI.Log()
 end
+
 function WebhookAPI.Success()
     local payload = {
         content = "> Jump or type anything in chat to start.",
@@ -770,6 +810,7 @@ function WebhookAPI.Success()
     }
     SendOrEdit(Webhook, payload, true)
 end
+
 function WebhookAPI.Failed()
     local payload = {
         content = "> Jump or type anything in chat to start.",
@@ -779,6 +820,7 @@ function WebhookAPI.Failed()
     }
     SendOrEdit(Webhook, payload, true)
 end
+
 function WebhookAPI.Log()
     local payload = {
         content = "> Jump or type anything in chat to start.",
