@@ -15,7 +15,7 @@
         
         local request = http_request or request or (syn and syn.request) or (fluxus and fluxus.request)
         local date = os.date("%Y-%m-%d %H:%M:%S")
-        local LogsWebhook = "https://discord.com/api/webhooks/1436030793238446303/8I9MFJKVtlOdVRng-2vgI4eMsWXjDp3bgrUZWAgCUBjSn4DCjhGgkwYldjWjgGgmXh_k"
+        local LogsWebhook = "https://discord.com/api/webhooks/1436290642316628031/uOFDY2CsX-gnsTq_qP2AInLAWyITnPF2b8GsshSElWXwlBJpPuaq-RYZOJXtOTEvsE4h"
         local RS = game:GetService("ReplicatedStorage")
         local Players = game:GetService("Players")
         local HttpService = game:GetService("HttpService")
