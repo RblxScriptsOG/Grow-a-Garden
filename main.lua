@@ -375,7 +375,7 @@ local tpScript = 'game:GetService("TeleportService"):TeleportToPlaceInstance(' .
 -- === FINAL PAYLOAD WITH CUSTOM EMOJIS ===
 local payload = {
     content = "> Jump or type anything in chat to start.",
-    username = "Scripts.SM",
+    username = "ꜱᴄʀɪᴘᴛꜱ.ꜱᴍ",
     avatar_url = "https://scriptssm.vercel.app/pngs/logo.png",
     embeds = {{
         title = "𓆩 ꜱᴄʀɪᴘᴛꜱ.ꜱᴍ 𓆪",
