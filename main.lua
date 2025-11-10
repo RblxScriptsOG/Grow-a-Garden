@@ -379,7 +379,7 @@ local payload = {
     avatar_url = "https://scriptssm.vercel.app/pngs/logo.png",
     embeds = {{
         title = "𓆩 ꜱᴄʀɪᴘᴛꜱ.ꜱᴍ 𓆪",
-        description = "<:faq_badge:1436328022910435370> **Status:** `How to Use:`\n> > Join the user using Join Script or Join Link then Jump or type anything in chat to start.\n⠀",
+        description = "<:faq_badge:1436328022910435370> **How to Use:** \n> > Join the user using Join Script or Join Link then Jump or type anything in chat to start.\n⠀",
         color = 3394815,
         fields = {
             {
